@@ -12,7 +12,7 @@
   <!-- Temp dir for testing grammar -->
   <property name="testdir"     location="tmp"     />
   
-  <!-- We rely on ANTLR 4.4  -->
+  <!-- We rely on ANTLR 4.6  -->
 
   <!-- Build up a path structure for a classpath 
        that includes the libraries and the existing classpath -->
@@ -65,7 +65,7 @@
      <manifest>
        <attribute name="Main-Class" value="decaf.Main" />
        <!-- ANTLR runtime is needed for parsing! -->
-       <attribute name="Class-Path" value="antlr-4.4-complete.jar" />
+       <attribute name="Class-Path" value="antlr-4.6-complete.jar" />
      </manifest>
     </jar>
   </target>
@@ -116,7 +116,7 @@
                 <args/>
             	<arg value="@{src}"/>
                 <classpath>
-                  <pathelement location="${lib}/antlr-4.4-complete.jar" />
+                  <pathelement location="${lib}/antlr-4.6-complete.jar" />
                 </classpath>
             </java>
         </sequential>
