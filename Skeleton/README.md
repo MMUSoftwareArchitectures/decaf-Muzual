@@ -1,7 +1,7 @@
 # Skeleton
 
 This is the skeleton code for the Compiler coursework in 6G6Z1010
-Software Architectures, term 2 2015/16 academic year. As per the
+Software Architectures, term 2 2016/17 academic year. As per the
 specifications (available on Moodle), this is a multi-stage assignment.
 
 The first stage is to develop the Lexer (Scanner) for the compiler,
