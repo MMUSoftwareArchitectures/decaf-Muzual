@@ -7,8 +7,22 @@
  */
 lexer grammar DecafLexer;
 
-// This rule matches one of the keywords for Decaf - what others do you need?
+// These rules match
+// all of the reserved words for Decaf (case sensitive) 
 CLASS : 'class';
+BOOLEAN : 'boolean';
+BREAK : 'break';
+CALLOUT : 'callout'; 
+CONTINUE : 'continue';
+ELSE : 'else';
+FALSE : 'false';
+FOR : 'for';
+IF : 'if';
+INT : 'int';
+RETURN : 'return';
+TRUE : 'true';
+VOID : 'void'; 
+
 
 // These two rules deal with characters that have special meaning in Decaf - again, what others?
 LCURLY : '{';
@@ -41,6 +55,7 @@ STRINGLITERAL : '"' (ESC|NOTESC)+ '"';
 
 // Character literals are composed of a <char> in single quotes
 CHARLITERAL : '\'' (ESC|NOTESC) '\'';
+
 
 // A rule that is marked as a fragment will NOT have a token created for it. So anything matching the rules above
 // will create a token in the output, but something matching the ESC rule below will only be used locally in the scope
