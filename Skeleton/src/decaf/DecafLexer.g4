@@ -67,9 +67,9 @@ HEX : '0''x'([0-9]|[a-f]|[A-F])+;
 // a double quote ('\' and '"'). HINT: there are many other characters that should be escaped - think of how you need
 // to write them in strings in languages like Java.
 fragment
-ESC :  '\\' ('"'|'n'|'t'|'\''|'\\'|'\\"');
+ESC :  '\\' ('"'|'n'|'t'|'\''|'\\');
 
 // NOTESC matches single quotes, double quotes, backslash, double backslashes, as well
 // the escape character for two character sequences such as newline, new tab and comment
 fragment
-NOTESC : ~('"'|'\n'|'\t'|'\''|'\\'|'\"');
+NOTESC : ~('"'|'\n'|'\t'|'\''|'\\');
