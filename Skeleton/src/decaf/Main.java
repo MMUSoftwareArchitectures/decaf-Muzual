@@ -70,6 +70,9 @@ public class Main {
                             case DecafLexer.STRING:
                             	type = " STRING";
                             	break;
+                            case DecafLexer.HEX:
+                            	type = " HEX NUMBER";
+                            	break;
                             }
                             System.out.println (token.getLine() + type + " " + text);
                         }

@@ -23,6 +23,8 @@ TRUE : 'true';
 VOID : 'void'; 
 INT : 'int';
 
+// these rules capture numerical operators
+// not yet imp
 
 // These two rules deal with characters that have special meaning in Decaf - again, what others?
 LCURLY : '{';
