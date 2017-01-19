@@ -18,7 +18,6 @@ ELSE : 'else';
 FALSE : 'false';
 FOR : 'for';
 IF : 'if';
-INT : 'int';
 RETURN : 'return';
 TRUE : 'true';
 VOID : 'void'; 
@@ -35,7 +34,7 @@ ID :
   ('a'..'z' | 'A'..'Z' | '_' ) ('a'..'z' | 'A'..'Z' | '_' | '0' .. '9')*;
 
 // This rule simply ignores (skips) any space, tab or newline characters
-WS_ : (' ' | '\t' | '\n' )+ -> skip;
+WS_ : (' ' | '\t' | '\n' | SL_COMMENT | '\f' )+ -> skip;
 
 // And this rule ignores comments (everything from a '//' to the end of the line)
 SL_COMMENT : '//' (~'\n')* '\n' -> skip;
@@ -44,18 +43,20 @@ SL_COMMENT : '//' (~'\n')* '\n' -> skip;
 // This rule says a character is contained within single quotes, and is a single instance of either an ESC, or any
 // character other than a single quote, a single backslash, a single double quote, plus the 2-character sequences 
 // of \", \', \\, \t and \n 
-CHAR : '\'' (ESC|NOTESC|~'\'') '\'';
+// Character literals are composed of a <char> in single quotes
+CHAR : '\'' (ESC|NOTESC) '\'';
 
 // This rule says a string is contained within double quotes, and is one or more instances of either an ESC, a NOTESC
 // character or any other than a double quote.
-STRING : '"' (ESC|~'"'|NOTESC)+ '"';
-
 // String Literals are composed of <char>s enclosed in double quotes
-STRINGLITERAL : '"' (ESC|NOTESC)+ '"';
+STRING : '"' (ESC|NOTESC)* '"';
 
-// Character literals are composed of a <char> in single quotes
-CHARLITERAL : '\'' (ESC|NOTESC) '\'';
+// this rule says an integer is either one or no negative signs followed by one or more integer 
+INT : '-'?[0-9]+;
 
+// this rule says a hex number is an integer from 0-9 followed by either case 
+// of a-f
+HEX : '0''x'([0-9]|[a-f]|[A-F])+; 
 
 // A rule that is marked as a fragment will NOT have a token created for it. So anything matching the rules above
 // will create a token in the output, but something matching the ESC rule below will only be used locally in the scope
@@ -65,9 +66,9 @@ CHARLITERAL : '\'' (ESC|NOTESC) '\'';
 // a double quote ('\' and '"'). HINT: there are many other characters that should be escaped - think of how you need
 // to write them in strings in languages like Java.
 fragment
-ESC :  '\\' ('n'|'"');
+ESC :  '\\' ('"'|'n'|'t'|'\''|'\\'|'\\"');
 
 // NOTESC matches single quotes, double quotes, backslash, double backslashes, as well
 // the escape character for two character sequences such as newline, new tab and comment
 fragment
-NOTESC : ~'\''|~'"'|~'\'|~'\"'|~'\\''|~'\\\'|~'\t'|~'\n';
+NOTESC : ~('"'|'\n'|'\t'|'\''|'\\'|'\"');
