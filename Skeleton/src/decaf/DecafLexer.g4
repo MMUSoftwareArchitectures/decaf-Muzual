@@ -21,6 +21,7 @@ IF : 'if';
 RETURN : 'return';
 TRUE : 'true';
 VOID : 'void'; 
+INT : 'int';
 
 
 // These two rules deal with characters that have special meaning in Decaf - again, what others?
@@ -52,7 +53,7 @@ CHAR : '\'' (ESC|NOTESC) '\'';
 STRING : '"' (ESC|NOTESC)* '"';
 
 // this rule says an integer is either one or no negative signs followed by one or more integer 
-INT : '-'?[0-9]+;
+INTLIT : '-'?[0-9]+;
 
 // this rule says a hex number is an integer from 0-9 followed by either case 
 // of a-f

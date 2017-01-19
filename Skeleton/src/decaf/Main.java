@@ -61,7 +61,7 @@ public class Main {
                             case DecafLexer.CHAR: 
                             	type = " CHARACTER";
                             	break;
-                            case DecafLexer.INT:
+                            case DecafLexer.INTLIT:
                             	type = " INT";
                             	break;
                             case DecafLexer.BOOLEAN:
