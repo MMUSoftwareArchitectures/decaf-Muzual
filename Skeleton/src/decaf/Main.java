@@ -58,20 +58,17 @@ public class Main {
                             case DecafLexer.ID:
                                 type = " IDENTIFIER";
                                 break;
-                            case DecafLexer.CHAR: 
-                            	type = " CHARACTER";
+                            case DecafLexer.CHARLIT: 
+                            	type = " CHARLIT";
                             	break;
                             case DecafLexer.INTLIT:
-                            	type = " INT";
+                            	type = " INTLIT";
                             	break;
                             case DecafLexer.BOOLEAN:
                             	type = " BOOLEAN";
                             	break;
-                            case DecafLexer.STRING:
-                            	type = " STRING";
-                            	break;
-                            case DecafLexer.HEX:
-                            	type = " HEX NUMBER";
+                            case DecafLexer.STRINGLIT:
+                            	type = " STRINGLIT";
                             	break;
                             }
                             System.out.println (token.getLine() + type + " " + text);

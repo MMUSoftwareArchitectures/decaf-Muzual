@@ -29,6 +29,12 @@ INT : 'int';
 // These two rules deal with characters that have special meaning in Decaf - again, what others?
 LCURLY : '{';
 RCURLY : '}';
+SEMICOLON : ';';
+LSQRBRK : '[';
+RSQRBRK : ']';
+COMMA : ',';
+LPAREN : '(';
+RPAREN : ')'; 
 
 // This says an identifier is a sequence of one or more alphabetic characters
 // or beginning with an underscore. can also contain digits. 
@@ -47,18 +53,19 @@ SL_COMMENT : '//' (~'\n')* '\n' -> skip;
 // character other than a single quote, a single backslash, a single double quote, plus the 2-character sequences 
 // of \", \', \\, \t and \n 
 // Character literals are composed of a <char> in single quotes
-CHAR : '\'' (ESC|NOTESC) '\'';
+CHARLIT : '\'' (ESC|NOTESC) '\'';
 
 // This rule says a string is contained within double quotes, and is one or more instances of either an ESC, a NOTESC
 // character or any other than a double quote.
 // String Literals are composed of <char>s enclosed in double quotes
-STRING : '"' (ESC|NOTESC)* '"';
+STRINGLIT : '"' (ESC|NOTESC)* '"';
 
 // this rule says an integer is either one or no negative signs followed by one or more integer 
-INTLIT : '-'?[0-9]+;
+INTLIT : '-'?([0-9]+|HEX);
 
 // this rule says a hex number is an integer from 0-9 followed by either case 
 // of a-f
+fragment
 HEX : '0''x'([0-9]|[a-f]|[A-F])+; 
 
 // A rule that is marked as a fragment will NOT have a token created for it. So anything matching the rules above

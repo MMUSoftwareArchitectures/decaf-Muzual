@@ -16,4 +16,9 @@ options { tokenVocab = DecafLexer; }
 // This rule says that a program consists of the tokens CLASS ID LCURLY RCURLY EOF nothing more nothing less,
 // in exactly that order. However obviously something (quite a lot of something) needs to go between the curly
 // brackets. You need to write the rules (based on the provided grammar) to capture this.
-program: CLASS ID LCURLY RCURLY EOF;
+program: CLASS ID LCURLY (field_decl)* (method_decl)* RCURLY EOF;
+
+field_decl: type field_name(COMMA field_name)* SEMICOLON 
+field_name: (ID|ID LSQRBRK INTLIT RSQRBRK)
+
+method_decl: (type | VOID) ID LPAREN ((type ID)(COMMA type ID)*)* RPAREN  block 
