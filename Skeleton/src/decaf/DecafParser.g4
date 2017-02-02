@@ -16,23 +16,23 @@ options { tokenVocab = DecafLexer; }
 // This rule says that a program consists of the tokens CLASS ID LCURLY RCURLY EOF nothing more nothing less,
 // in exactly that order. However obviously something (quite a lot of something) needs to go between the curly
 // brackets. You need to write the rules (based on the provided grammar) to capture this.
-program: CLASS id LCURLY (field_decl)* (method_decl)* RCURLY EOF;
+program: CLASS ID LCURLY (field_decl)* (method_decl)* RCURLY EOF;
 
 field_decl: type field_name(COMMA field_name)* SEMICOLON ;
-field_name: (id|id LSQRBRK INTLIT RSQRBRK);
+field_name: (ID|ID LSQRBRK INTLIT RSQRBRK);
 
-method_decl: (type | VOID) id LPAREN ((type id)(COMMA type id)*)? RPAREN  block;
+method_decl: (type | VOID) ID LPAREN ((type ID)(COMMA type ID)*)? RPAREN  block;
 
 block: LCURLY var_decl* statement*  RCURLY;
 
-var_decl: type id(COMMA id)* SEMICOLON;
+var_decl: type ID(COMMA ID)* SEMICOLON;
 
 type: (INT | BOOLEAN);
 
 statement: location assign_op expr
 		| method_call
 		| IF LPAREN expr RPAREN block (ELSE block)?
-		| FOR id ASSIGNOPERATOR expr COMMA expr block
+		| FOR ID ASSIGNOPERATOR expr COMMA expr block
 		| RETURN (expr)? SEMICOLON
 		| BREAK SEMICOLON
 		| CONTINUE SEMICOLON
@@ -46,9 +46,9 @@ assign_op: ASSIGNOPERATOR
 method_call: method_name LPAREN (expr(COMMA expr)*)? RPAREN
 		| CALLOUT LPAREN STRINGLIT (callout_arg(COMMA callout_arg)*)? RPAREN;
 		
-method_name: id;
-location: id
-		| id LSQRBRK expr RSQRBRK;
+method_name: ID;
+location: ID
+		| ID LSQRBRK expr RSQRBRK;
 
 expr: location
 		| method_call
@@ -72,7 +72,8 @@ cond_op: (AND | OR);
 
 literal: (int_literal | char_literal | boolean_literal); 
 
-id: (ALPHA)(alpha_num)*;
+
+//////
 
 alpha_num: (ALPHA|digit);
 
