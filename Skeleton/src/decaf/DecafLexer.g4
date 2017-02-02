@@ -34,7 +34,23 @@ LSQRBRK : '[';
 RSQRBRK : ']';
 COMMA : ',';
 LPAREN : '(';
-RPAREN : ')'; 
+RPAREN : ')';
+UNDERSCORE: '_';
+ASSIGNOPERATOR : '=';
+ARITHPLUS: '+';
+ARITHMINUS: '-'; 
+EXCLMRK: '!'; 
+ARITHMOD: '%';
+ARITHDIV: '/';
+ARITHMULT: '*'; 
+GRTTHAN: '>';
+LESTHAN: '<';
+GRTEQUAL: '>=';
+LESEQUAL: '<='; 
+EQUALOP: '=='; 
+NOTEQUAL: '!='; 
+AND: '&&';
+OR: '||'; 
 
 // This says an identifier is a sequence of one or more alphabetic characters
 // or beginning with an underscore. can also contain digits. 
@@ -78,7 +94,58 @@ HEX : '0''x'([0-9]|[a-f]|[A-F])+;
 fragment
 ESC :  '\\' ('"'|'n'|'t'|'\''|'\\');
 
+fragment
+ALPHA: ([a-z]|[A-Z]| UNDERSCORE);
+
 // NOTESC matches single quotes, double quotes, backslash, double backslashes, as well
 // the escape character for two character sequences such as newline, new tab and comment
 fragment
 NOTESC : ~('"'|'\n'|'\t'|'\''|'\\');
+
+fragment
+literal : 
+
+fragment
+bin_op :
+
+fragment 
+arith_op :
+
+fragment 
+rel_op :
+
+fragment
+eq_op :
+
+fragment 
+cond_op :
+
+fragment
+alpha_num :
+
+fragment 
+alpha :
+
+fragment 
+digit : 
+
+fragment 
+hex_digit :
+
+fragment 
+int_literal :
+
+fragment 
+decimal_literal :
+
+fragment 
+hex_literal :
+
+fragment 
+bool_literal :
+
+fragment 
+char_literal :
+
+fragment 
+string_literal : 
