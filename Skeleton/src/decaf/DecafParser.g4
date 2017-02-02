@@ -79,3 +79,14 @@ alpha_num: (ALPHA|digit);
 digit: '0'..'9';
 
 hex_digit: (digit|ALPHA|ALPHA);
+
+int_literal: (decimal_literal | hex_literal);
+
+decimal_literal: (digit)(digit)*;
+
+hex_literal: HEX; 
+
+boolean_literal: (TRUE | FALSE); 
+
+char_literal: CHARLIT;
+string_literal: STRINGLIT; 
