@@ -19,7 +19,7 @@ options { tokenVocab = DecafLexer; }
 program: CLASS ID LCURLY (field_decl)* (method_decl)* RCURLY EOF;
 
 field_decl: type field_name(COMMA field_name)* SEMICOLON ;
-field_name: (ID|ID LSQRBRK INTLIT RSQRBRK);
+field_name: (ID|ID LSQRBRK INT_LITERAL RSQRBRK);
 
 method_decl: (type | VOID) ID LPAREN ((type ID)(COMMA type ID)*)? RPAREN  block;
 
@@ -29,8 +29,8 @@ var_decl: type ID(COMMA ID)* SEMICOLON;
 
 type: (INT | BOOLEAN);
 
-statement: location assign_op expr
-		| method_call
+statement: location assign_op expr SEMICOLON
+		| method_call SEMICOLON
 		| IF LPAREN expr RPAREN block (ELSE block)?
 		| FOR ID ASSIGNOPERATOR expr COMMA expr block
 		| RETURN (expr)? SEMICOLON
@@ -44,7 +44,7 @@ assign_op: ASSIGNOPERATOR
 		| ARITHMINUS ASSIGNOPERATOR;
 		
 method_call: method_name LPAREN (expr(COMMA expr)*)? RPAREN
-		| CALLOUT LPAREN STRINGLIT (callout_arg(COMMA callout_arg)*)? RPAREN;
+		| CALLOUT LPAREN STRING_LITERAL (COMMA callout_arg(COMMA callout_arg)*)? RPAREN;
 		
 method_name: ID;
 location: ID
@@ -58,8 +58,8 @@ expr: location
 		| EXCLMRK expr 
 		| LPAREN expr RPAREN;
 
-callout_arg: (expr | STRINGLIT);
-//
+callout_arg: (expr | STRING_LITERAL);
+
 bin_op: (arith_op | rel_op | eq_op | cond_op);
 
 arith_op: (ARITHPLUS | ARITHMINUS | ARITHMULT | ARITHDIV | ARITHMOD);
@@ -70,25 +70,4 @@ eq_op: (EQUALOP | NOTEQUAL);
 
 cond_op: (AND | OR); 
 
-literal: (int_literal | char_literal | boolean_literal); 
-
-
-//////
-
-alpha_num: (ALPHA|digit);
-
-digit: '0'..'9';
-//test
-
-hex_digit: (digit|ALPHA|ALPHA);
-
-int_literal: (decimal_literal | hex_literal);
-
-decimal_literal: (digit)(digit)*;
-
-hex_literal: HEX; 
-
-boolean_literal: (TRUE | FALSE); 
-
-char_literal: CHARLIT;
-string_literal: STRINGLIT; 
+literal: (INT_LITERAL | CHAR_LITERAL | BOOL_LITERAL); 

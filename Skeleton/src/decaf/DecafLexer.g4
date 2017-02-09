@@ -1,8 +1,6 @@
 /*
- * Skeleton code for your Lexer, provided by Emma Norling
- *
- * Please note that this code is far from complete.
- * It needs to be extended and the documentation updated to reflect your changes.
+ * Skeleton code for your Lexer, provided by Emma Norling, 
+ * 		extended by Miles Schofield
  *
  */
 lexer grammar DecafLexer;
@@ -23,10 +21,7 @@ TRUE : 'true';
 VOID : 'void'; 
 INT : 'int';
 
-// these rules capture numerical operators
-// not yet imp
-
-// These two rules deal with characters that have special meaning in Decaf - again, what others?
+// These two rules deal with individual characters that have special meaning in Decaf
 LCURLY : '{';
 RCURLY : '}';
 SEMICOLON : ';';
@@ -52,16 +47,17 @@ NOTEQUAL: '!=';
 AND: '&&';
 OR: '||'; 
 
-// This says an identifier is a sequence of one or more alphabetic characters
-// or beginning with an underscore. can also contain digits. 
-// Decaf is a little more sophisticated than this.
+// This rule shows that ID must start with a letter or underscore, then
+// any combination of digits, letters or underscores. 
 ID : 
-  ('a'..'z' | 'A'..'Z' | '_' ) ('a'..'z' | 'A'..'Z' | '_' | '0' .. '9')*;
+  (ALPHA|'_') (ALPHA_NUM|'_')*;
 
-// This rule simply ignores (skips) any space, tab or newline characters
+
+// This rule simply ignores (skips) any space, tab or newline characters, as well as comments
 WS_ : (' ' | '\t' | '\n' | SL_COMMENT | '\f' )+ -> skip;
 
-// And this rule ignores comments (everything from a '//' to the end of the line)
+
+// This rule ignores comments (everything from a '//' to the end of the line)
 SL_COMMENT : '//' (~'\n')* '\n' -> skip;
 
 // These two rules completely describe characters and strings, and make use of the ESC and NOTESC fragments described below
@@ -69,20 +65,20 @@ SL_COMMENT : '//' (~'\n')* '\n' -> skip;
 // character other than a single quote, a single backslash, a single double quote, plus the 2-character sequences 
 // of \", \', \\, \t and \n 
 // Character literals are composed of a <char> in single quotes
-CHARLIT : '\'' (ESC|NOTESC) '\'';
+CHAR_LITERAL : '\'' (ESC|NOTESC) '\'';
 
 // This rule says a string is contained within double quotes, and is one or more instances of either an ESC, a NOTESC
 // character or any other than a double quote.
 // String Literals are composed of <char>s enclosed in double quotes
-STRINGLIT : '"' (ESC|NOTESC)* '"';
+STRING_LITERAL : '"' (ESC|NOTESC)* '"';
 
 // this rule says an integer is either one or no negative signs followed by one or more integer 
-INTLIT : '-'?([0-9]+|HEX);
+INT_LITERAL : '-'?(DECIMAL_LITERAL|HEX_LITERAL);
 
 // this rule says a hex number is an integer from 0-9 followed by either case 
 // of a-f
 fragment
-HEX : '0''x'([0-9]|[a-f]|[A-F])+; 
+HEX_LITERAL : '0x' HEX_DIGIT+; 
 
 // A rule that is marked as a fragment will NOT have a token created for it. So anything matching the rules above
 // will create a token in the output, but something matching the ESC rule below will only be used locally in the scope
@@ -94,58 +90,32 @@ HEX : '0''x'([0-9]|[a-f]|[A-F])+;
 fragment
 ESC :  '\\' ('"'|'n'|'t'|'\''|'\\');
 
-fragment
-ALPHA: ([a-z]|[A-Z]| UNDERSCORE);
-
 // NOTESC matches single quotes, double quotes, backslash, double backslashes, as well
 // the escape character for two character sequences such as newline, new tab and comment
 fragment
 NOTESC : ~('"'|'\n'|'\t'|'\''|'\\');
 
 fragment
-literal : 
-
-fragment
-bin_op :
+ALPHA_NUM : (ALPHA | DIGIT) ;
 
 fragment 
-arith_op :
+ALPHA : ([a-z]|[A-Z]); 
 
 fragment 
-rel_op :
-
-fragment
-eq_op :
+DIGIT : [0-9];
 
 fragment 
-cond_op :
-
-fragment
-alpha_num :
+HEX_DIGIT : (DIGIT|[a-f]|[A-F]);
 
 fragment 
-alpha :
+DECIMAL_LITERAL : DIGIT+ ;
+
+BOOL_LITERAL : (TRUE | FALSE) ;
+
+/*
+fragment 
+CHAR_LITERAL : '\' CHAR '\'; 
 
 fragment 
-digit : 
-
-fragment 
-hex_digit :
-
-fragment 
-int_literal :
-
-fragment 
-decimal_literal :
-
-fragment 
-hex_literal :
-
-fragment 
-bool_literal :
-
-fragment 
-char_literal :
-
-fragment 
-string_literal : 
+STRING_LITERAL : '"' CHAR* '"' ;
+*/
