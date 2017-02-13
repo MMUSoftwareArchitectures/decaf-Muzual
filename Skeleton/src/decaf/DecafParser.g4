@@ -1,21 +1,19 @@
 /*
- * A VERY minimal skeleton for your parser, provided by Emma Norling.
+ * A skeleton for your parser, provided by Emma Norling.
+ * Extended by Miles Schofield
+ * 
  *
- * Your parser should use the tokens provided by your lexer in rules.
- * Even if your lexer appeared to be working perfectly for stage 1,
- * you might need to adjust some of those rules when you implement
- * your parser.
- *
- * Remember to provide documentation too (including replacing this
- * documentation).
+ * The parser holds the grammar rules for the compiler utilising the tokens
+ * created by the Lexer component 
  *
  */
 parser grammar DecafParser;
 options { tokenVocab = DecafLexer; }
 
-// This rule says that a program consists of the tokens CLASS ID LCURLY RCURLY EOF nothing more nothing less,
-// in exactly that order. However obviously something (quite a lot of something) needs to go between the curly
-// brackets. You need to write the rules (based on the provided grammar) to capture this.
+// Rule to show that a program is defined by class, ID, then any amount of field or method declarations
+// within curly braces. The program is ended by the END OF FILE which is automatically provided by 
+// ANTLR and does not exist in the Lexer. 
+
 program: CLASS ID LCURLY (field_decl)* (method_decl)* RCURLY EOF;
 
 field_decl: type field_name(COMMA field_name)* SEMICOLON ;
