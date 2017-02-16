@@ -51,16 +51,16 @@ location: ID
 expr: location
 		| method_call
 		| literal
-		| expr bin_op expr
 		| ARITHMINUS expr
 		| EXCLMRK expr 
+		| expr bin_op expr
 		| LPAREN expr RPAREN;
 
 callout_arg: (expr | STRING_LITERAL);
 
 bin_op: (arith_op | rel_op | eq_op | cond_op);
 
-arith_op: (ARITHPLUS | ARITHMINUS | ARITHMULT | ARITHDIV | ARITHMOD);
+arith_op: (ARITHMULT | ARITHDIV | ARITHMOD | ARITHPLUS | ARITHMINUS);
 
 rel_op: (GRTTHAN | LESTHAN | GRTEQUAL | LESEQUAL); 
 

@@ -93,6 +93,18 @@ public class Main {
 	                System.out.println(formatted);
                 }
             }
+             else if (CLI.target == CLI.INTER)
+             {
+                 DecafLexer lexer = new DecafLexer(antlrIOS);
+                 CommonTokenStream tokens = new CommonTokenStream(lexer);
+                 DecafParser parser = new DecafParser (tokens);
+                 ScopeListener listener = new ScopeListener();
+                 ParseTree tree = parser.program();
+                 ParseTreeWalker.DEFAULT.walk(listener, tree);
+                 if (CLI.debug) {
+    	             
+                 }
+            }
             
         } catch(Exception e) {
             // print the error:
