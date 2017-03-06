@@ -4,6 +4,9 @@ import java.util.Hashtable;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.*;
+
+import decaf.DecafParser.Strong_arith_opContext;
+
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -22,15 +25,15 @@ public class ScopeListener extends DecafParserBaseListener {
 	// variable values. type, size of array, etc 
 	@Override
 	public void enterField_decl(DecafParser.Field_declContext ctx) {
+		
 		List<DecafParser.Field_nameContext> fields = ctx.field_name(); 
 		Scope scope = scopes.peek();
 		for (DecafParser.Field_nameContext field : fields) {
-			String varName = field.ID().getText();
-			String varType = ctx.type().getText();
-			if(checkVarName(varName)) {
-			System.err.println("Already exists" + varName + varType);
+			ScopeElement var = new ScopeElement(field.ID().getText(), ctx.type().getText()); 
+			if(checkVarName(var.getVarName())) {
+				System.err.println("Already exists" + var.getVarName()+ var.getVarType());
 			} else {	
-			scope.put(varName,varType);
+				scope.put(var.getVarName(), var);
 			}
 			int varArraySize = Integer.parseInt((field.INT_LITERAL().getText())); 
 			if(varArraySize == 0) System.err.println("Error line " + ctx.getStart().getLine() + ": Invalid array size");
@@ -42,14 +45,12 @@ public class ScopeListener extends DecafParserBaseListener {
 	public void enterVar_decl(DecafParser.Var_declContext ctx) {
 		Scope scope = scopes.peek();
 			List<TerminalNode> variables = ctx.ID();
-			String varType = ctx.type().getText();
 			for(TerminalNode variable : variables) {
-				String varName = variable.getText(); 
-				
-			if(checkVarName(varName)) {
-			System.err.println("Error line " + ctx.getStart().getLine() + ": Already exists: " + varName + ", " + varType);
+				ScopeElement var = new ScopeElement(variable.getText(), ctx.type().getText()); 
+			if(checkVarName(var.getVarName())) {
+				System.err.println("Error line " + ctx.getStart().getLine() + ": Already exists: " + var.getVarName() + ", " + var.getVarType());
 			} else {	
-			scope.put(varName,varType);
+				scope.put(var.getVarName(), var);
 			}
 			}
 	}
@@ -58,9 +59,7 @@ public class ScopeListener extends DecafParserBaseListener {
 	public void enterStatement(DecafParser.StatementContext ctx) {
 		Scope scope = scopes.peek();
 		TerminalNode variable = ctx.location().ID(); 
-		if (!(checkVarName(variable.getText()))) {
-				System.err.println("Error line " + ctx.getStart().getLine() + ": Variable not declared");
-		}
+		if (!(checkVarName(variable.getText()))) System.err.println("Error line " + ctx.getStart().getLine() + ": Variable not declared");
 	}
 	
 	@Override
@@ -83,6 +82,18 @@ public class ScopeListener extends DecafParserBaseListener {
 			System.out.println(key); 
 		}
 	} */
+	
+	@Override
+	public void enterExpr(DecafParser.ExprContext ctx) {
+		if(!(checkVarName(ctx.literal().getText()))) System.err.println("Error line " + ctx.getStart().getLine() + ": Variable not declared");
+		DecafParser.Strong_arith_opContext test = ctx.strong_arith_op();
+	}
+
+	@Override
+	public void enterStrong_arith_op(Strong_arith_opContext ctx) {
+		// TODO Auto-generated method stub
+		super.enterStrong_arith_op(ctx);
+	}
 
 	private boolean checkVarName(String varName) {
 		Scope scope = scopes.peek();
@@ -91,7 +102,7 @@ public class ScopeListener extends DecafParserBaseListener {
 		return doesExist; 
 		}
 	}
-	class Scope extends Hashtable<String, String> {
+	class Scope extends Hashtable<String, ScopeElement> {
 		final Scope parent;
 		
 		public Scope(Scope parent) {

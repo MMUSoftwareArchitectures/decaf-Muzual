@@ -157,15 +157,25 @@ public interface DecafParserListener extends ParseTreeListener {
 	 */
 	void exitBin_op(DecafParser.Bin_opContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link DecafParser#arith_op}.
+	 * Enter a parse tree produced by {@link DecafParser#strong_arith_op}.
 	 * @param ctx the parse tree
 	 */
-	void enterArith_op(DecafParser.Arith_opContext ctx);
+	void enterStrong_arith_op(DecafParser.Strong_arith_opContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link DecafParser#arith_op}.
+	 * Exit a parse tree produced by {@link DecafParser#strong_arith_op}.
 	 * @param ctx the parse tree
 	 */
-	void exitArith_op(DecafParser.Arith_opContext ctx);
+	void exitStrong_arith_op(DecafParser.Strong_arith_opContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link DecafParser#weak_arith_op}.
+	 * @param ctx the parse tree
+	 */
+	void enterWeak_arith_op(DecafParser.Weak_arith_opContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link DecafParser#weak_arith_op}.
+	 * @param ctx the parse tree
+	 */
+	void exitWeak_arith_op(DecafParser.Weak_arith_opContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link DecafParser#rel_op}.
 	 * @param ctx the parse tree

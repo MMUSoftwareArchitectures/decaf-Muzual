@@ -195,13 +195,25 @@ public class DecafParserBaseListener implements DecafParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterArith_op(DecafParser.Arith_opContext ctx) { }
+	@Override public void enterStrong_arith_op(DecafParser.Strong_arith_opContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitArith_op(DecafParser.Arith_opContext ctx) { }
+	@Override public void exitStrong_arith_op(DecafParser.Strong_arith_opContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterWeak_arith_op(DecafParser.Weak_arith_opContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitWeak_arith_op(DecafParser.Weak_arith_opContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
