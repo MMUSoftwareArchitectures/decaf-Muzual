@@ -85,14 +85,28 @@ public class ScopeListener extends DecafParserBaseListener {
 	
 	@Override
 	public void enterExpr(DecafParser.ExprContext ctx) {
-		if(!(checkVarName(ctx.literal().getText()))) System.err.println("Error line " + ctx.getStart().getLine() + ": Variable not declared");
-		DecafParser.Strong_arith_opContext test = ctx.strong_arith_op();
+		Scope scope = scopes.peek(); 
+		DecafParser.LiteralContext literalCtx = ctx.literal(); 
+		DecafParser.Strong_arith_opContext Strongoperator = ctx.strong_arith_op();
+		DecafParser.Weak_arith_opContext Weakoperator = ctx.weak_arith_op();
+		DecafParser.Bin_opContext Binoperator = ctx.bin_op(); 
+		
+		
+		System.out.println(literalCtx.getText()); 
+		if(!(checkVarName(literalCtx.getText()))) System.err.println("Error line " + ctx.getStart().getLine() + ": Variable not declared");
+		
+		if(Strongoperator.getText() != null || Weakoperator.getText() != null) {
+			ScopeElement temp = scope.get(ctx.literal().getText());
+			//temp.getVarType(); 
+		} else if (Binoperator.getText() != null) {
+			
+		}
+		
 	}
 
 	@Override
 	public void enterStrong_arith_op(Strong_arith_opContext ctx) {
-		// TODO Auto-generated method stub
-		super.enterStrong_arith_op(ctx);
+		
 	}
 
 	private boolean checkVarName(String varName) {
