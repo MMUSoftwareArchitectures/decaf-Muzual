@@ -58,6 +58,7 @@ public class ScopeListener extends DecafParserBaseListener {
 	@Override
 	public void enterStatement(DecafParser.StatementContext ctx) {
 		Scope scope = scopes.peek();
+		DecafParser.ExprContext expr = ctx.expr(0); 
 		// if assignment statement, check that LHS has been declared
 		TerminalNode variable = ctx.location().ID(); 
 		if (!(varInScope(variable.getText()))) System.err.println("Error line " + ctx.getStart().getLine() + ": Variable not declared");
@@ -66,30 +67,63 @@ public class ScopeListener extends DecafParserBaseListener {
 		String LHS_Type = temp.getVarType();
 		
 		// Now check type(RHS) = type (LHS)
-		String RHS_Type = type(expr);
+		//String RHS_Type = type(expr);
 		
-		if(!(LHS_Type.equals("int") && RHS_Type.equals("int"))){
+		/*if(!(LHS_Type.equals("int") && RHS_Type.equals("int"))){
 			System.err.println("Error line " + ctx.getStart().getLine() + ": Type mismatch, cannot perform operation on types " + LHS_Type + " and " + RHS_Type); 
-		}
+		}*/ 
 	}
 	
+	/*
 	public String type(DecafParser.ExprContext expr) {
-		
 		// straightforward location
-		if (expr.location() != null) return type(expr.location());
 		
+		
+		if (expr.location() != null) return type(expr.location());
+		if (expr.literal() != null) return type (expr.literal());
+		if (expr.method_call() != null) return type (expr.method_call());
+		
+		// anything beyond here involves at least one subexpression
+
 		DecafParser.ExprContext l_expr = expr.expr(0);
 		DecafParser.ExprContext r_expr = expr.expr(1);
-				
-		System.out.println(l_expr);
-		System.out.println(r_expr);
-		return("test"); 
+		if (r_expr == null) {
+			// NOT
+				return "boolean";
+			// MINUS
+				return "int";
+			// ( expr )
+				return type (l_expr);
+		}
+		// must have binary expression
+			// arith op
+				if (type (l_expr) == "int" && type (r_expr) == "int") return "int";
+			// boolean op
+			// relational op
+			// eq op
+
 	}
-	
+	*/
 	public String type(DecafParser.LocationContext loc) {
+		
 		Scope scope = scopes.peek(); 
 		ScopeElement temp = scope.get(loc.ID()); 
 		System.out.println(temp.getVarType());
+		
+		return(temp.getVarType());
+	}
+	public String type(DecafParser.LiteralContext literal) {
+		
+		if(literal.INT_LITERAL() != null) {
+			return("int");
+		} else {
+			return("string");
+		}
+	}
+	public String type(DecafParser.Method_callContext mContext) {
+		
+		Scope scope = scopes.peek(); 
+		ScopeElement temp = scope.get(mContext.method_name().getText());
 		return(temp.getVarType()); 
 	}
 	
