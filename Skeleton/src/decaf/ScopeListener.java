@@ -30,13 +30,13 @@ public class ScopeListener extends DecafParserBaseListener {
 		Scope scope = scopes.peek();
 		for (DecafParser.Field_nameContext field : fields) {
 			ScopeElement var = new ScopeElement(field.ID().getText(), ctx.type().getText()); 
-			if(checkVarName(var.getVarName())) {
+			if(varInScope(var.getVarName())) {
 				System.err.println("Already exists" + var.getVarName()+ var.getVarType());
 			} else {	
 				scope.put(var.getVarName(), var);
 			}
 			int varArraySize = Integer.parseInt((field.INT_LITERAL().getText())); 
-			if(varArraySize == 0) System.err.println("Error line " + ctx.getStart().getLine() + ": Invalid array size");
+			if(varArraySize == 0) System.err.println("Error line " + ctx.getStart().getLine() + ": Invalid array size on array named: " + field.ID().getText());
 			
 		}
 	}
@@ -47,7 +47,7 @@ public class ScopeListener extends DecafParserBaseListener {
 			List<TerminalNode> variables = ctx.ID();
 			for(TerminalNode variable : variables) {
 				ScopeElement var = new ScopeElement(variable.getText(), ctx.type().getText()); 
-			if(checkVarName(var.getVarName())) {
+			if(varInScope(var.getVarName())) {
 				System.err.println("Error line " + ctx.getStart().getLine() + ": Already exists: " + var.getVarName() + ", " + var.getVarType());
 			} else {	
 				scope.put(var.getVarName(), var);
@@ -58,8 +58,39 @@ public class ScopeListener extends DecafParserBaseListener {
 	@Override
 	public void enterStatement(DecafParser.StatementContext ctx) {
 		Scope scope = scopes.peek();
+		// if assignment statement, check that LHS has been declared
 		TerminalNode variable = ctx.location().ID(); 
-		if (!(checkVarName(variable.getText()))) System.err.println("Error line " + ctx.getStart().getLine() + ": Variable not declared");
+		if (!(varInScope(variable.getText()))) System.err.println("Error line " + ctx.getStart().getLine() + ": Variable not declared");
+		
+		ScopeElement temp = scope.get(variable.getText()); 
+		String LHS_Type = temp.getVarType();
+		
+		// Now check type(RHS) = type (LHS)
+		String RHS_Type = type(expr);
+		
+		if(!(LHS_Type.equals("int") && RHS_Type.equals("int"))){
+			System.err.println("Error line " + ctx.getStart().getLine() + ": Type mismatch, cannot perform operation on types " + LHS_Type + " and " + RHS_Type); 
+		}
+	}
+	
+	public String type(DecafParser.ExprContext expr) {
+		
+		// straightforward location
+		if (expr.location() != null) return type(expr.location());
+		
+		DecafParser.ExprContext l_expr = expr.expr(0);
+		DecafParser.ExprContext r_expr = expr.expr(1);
+				
+		System.out.println(l_expr);
+		System.out.println(r_expr);
+		return("test"); 
+	}
+	
+	public String type(DecafParser.LocationContext loc) {
+		Scope scope = scopes.peek(); 
+		ScopeElement temp = scope.get(loc.ID()); 
+		System.out.println(temp.getVarType());
+		return(temp.getVarType()); 
 	}
 	
 	@Override
@@ -83,33 +114,18 @@ public class ScopeListener extends DecafParserBaseListener {
 		}
 	} */
 	
+	
 	@Override
 	public void enterExpr(DecafParser.ExprContext ctx) {
 		Scope scope = scopes.peek(); 
-		DecafParser.LiteralContext literalCtx = ctx.literal(); 
-		DecafParser.Strong_arith_opContext Strongoperator = ctx.strong_arith_op();
-		DecafParser.Weak_arith_opContext Weakoperator = ctx.weak_arith_op();
-		DecafParser.Bin_opContext Binoperator = ctx.bin_op(); 
-		
-		
-		System.out.println(literalCtx.getText()); 
-		if(!(checkVarName(literalCtx.getText()))) System.err.println("Error line " + ctx.getStart().getLine() + ": Variable not declared");
-		
-		if(Strongoperator.getText() != null || Weakoperator.getText() != null) {
-			ScopeElement temp = scope.get(ctx.literal().getText());
-			//temp.getVarType(); 
-		} else if (Binoperator.getText() != null) {
-			
+		// if the expression is simply a location, check that it has been declared
+		if (ctx.location() != null) {
+			if(!(varInScope(ctx.location().ID().getText()))) System.err.println("Error line " + ctx.getStart().getLine() + ": Variable not declared: " + ctx.literal().getText());
 		}
 		
 	}
 
-	@Override
-	public void enterStrong_arith_op(Strong_arith_opContext ctx) {
-		
-	}
-
-	private boolean checkVarName(String varName) {
+	private boolean varInScope(String varName) {
 		Scope scope = scopes.peek();
 		boolean doesExist = false; 
 		if(scope.inScope(varName)) doesExist = true;
