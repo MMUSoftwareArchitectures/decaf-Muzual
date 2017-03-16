@@ -101,26 +101,26 @@ public class ScopeListener extends DecafParserBaseListener {
 					return "int"; 
 			} 
 			if(expr.weak_arith_op() != null) {
-				if (type(l_expr).equals("int") && type(r_expr).equals("int")) {
+				if (!(type(l_expr).equals("int") && type(r_expr).equals("int"))) {
 					System.err.println("Error line " + expr.getStart().getLine() + ": Type mismatch, cannot perform operation on types " + l_expr.getText() + " and " + r_expr.getText()); 
 				}
-					return "int";
+					return "int"; 
 			}
 			if(expr.bin_op() != null) { 
 				if(expr.bin_op().rel_op() != null) {
-					if (type(l_expr).equals("int") && type(r_expr).equals("int")) {
+					if (!(type(l_expr).equals("int") && type(r_expr).equals("int"))) {
 						System.err.println("Error line " + expr.getStart().getLine() + ": Type mismatch, cannot perform operation on types " + l_expr.getText() + " and " + r_expr.getText()); 
 					}
 						return "boolean"; 
 				}
 				if(expr.bin_op().cond_op() != null) {
-					if (type(l_expr).equals("boolean") && type(r_expr).equals("boolean")) { 
+					if (!(type(l_expr).equals("boolean") && type(r_expr).equals("boolean"))) { 
 						System.err.println("Error line " + expr.getStart().getLine() + ": Type mismatch, cannot perform operation on types " + l_expr.getText() + " and " + r_expr.getText()); 
 					}
 						return "boolean"; 
 				}
 				if(expr.bin_op().eq_op() != null) {
-					if (type(l_expr).equals(type(r_expr))) {
+					if (!(type(l_expr).equals(type(r_expr)))) {
 						System.err.println("Error line " + expr.getStart().getLine() + ": Type mismatch, cannot perform operation on types " + l_expr.getText() + " and " + r_expr.getText()); 
 					}
 						return "boolean"; 
