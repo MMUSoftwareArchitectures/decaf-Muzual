@@ -95,7 +95,7 @@ public class ScopeListener extends DecafParserBaseListener {
 			l_expr = expr.expr(0);
 		// must have binary expression
 			if(expr.strong_arith_op() != null) {
-				if (type(l_expr).equals("int") && type(r_expr).equals("int")) {
+				if (!(type(l_expr).equals("int") && type(r_expr).equals("int"))) {
 					System.err.println("Error line " + expr.getStart().getLine() + ": Type mismatch, cannot perform operation on types " + l_expr.getText() + " and " + r_expr.getText()); 
 				}
 					return "int"; 
