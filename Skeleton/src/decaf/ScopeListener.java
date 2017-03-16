@@ -66,58 +66,83 @@ public class ScopeListener extends DecafParserBaseListener {
 		ScopeElement temp = scope.get(variable.getText()); 
 		String LHS_Type = temp.getVarType();
 		
-		// Now check type(RHS) = type (LHS)
-		//String RHS_Type = type(expr);
-		
-		/*if(!(LHS_Type.equals("int") && RHS_Type.equals("int"))){
+		//Now check type(RHS) = type (LHS)
+		String RHS_Type = type(expr);
+		if(!(LHS_Type.equals("int") && RHS_Type.equals("int"))){
 			System.err.println("Error line " + ctx.getStart().getLine() + ": Type mismatch, cannot perform operation on types " + LHS_Type + " and " + RHS_Type); 
-		}*/ 
+	}
 	}
 	
-	/*
+	
 	public String type(DecafParser.ExprContext expr) {
 		// straightforward location
+		DecafParser.ExprContext l_expr = null;
+		DecafParser.ExprContext r_expr = null;
+		DecafParser.LocationContext location = expr.location();
 		
-		
-		if (expr.location() != null) return type(expr.location());
+		if (location != null) return type(location);
 		if (expr.literal() != null) return type (expr.literal());
 		if (expr.method_call() != null) return type (expr.method_call());
 		
 		// anything beyond here involves at least one subexpression
-
-		DecafParser.ExprContext l_expr = expr.expr(0);
-		DecafParser.ExprContext r_expr = expr.expr(1);
-		if (r_expr == null) {
-			// NOT
-				return "boolean";
-			// MINUS
-				return "int";
-			// ( expr )
-				return type (l_expr);
-		}
+		if (expr.expr().size() == 1) {
+			l_expr = expr.expr(0);
+			if(l_expr.EXCLMRK() != null) return "boolean"; // Boolean NOT
+			else if(l_expr.ARITHMINUS() != null) return "int"; // Unary Minus 
+			else return type (l_expr);
+		} else { 
+			r_expr = expr.expr(1);
+			l_expr = expr.expr(0);
 		// must have binary expression
-			// arith op
-				if (type (l_expr) == "int" && type (r_expr) == "int") return "int";
-			// boolean op
-			// relational op
-			// eq op
-
+			if(expr.strong_arith_op() != null) {
+				if (type(l_expr).equals("int") && type(r_expr).equals("int")) {
+					System.err.println("Error line " + expr.getStart().getLine() + ": Type mismatch, cannot perform operation on types " + l_expr.getText() + " and " + r_expr.getText()); 
+				}
+					return "int"; 
+			} 
+			if(expr.weak_arith_op() != null) {
+				if (type(l_expr).equals("int") && type(r_expr).equals("int")) {
+					System.err.println("Error line " + expr.getStart().getLine() + ": Type mismatch, cannot perform operation on types " + l_expr.getText() + " and " + r_expr.getText()); 
+				}
+					return "int";
+			}
+			if(expr.bin_op() != null) { 
+				if(expr.bin_op().rel_op() != null) {
+					if (type(l_expr).equals("int") && type(r_expr).equals("int")) {
+						System.err.println("Error line " + expr.getStart().getLine() + ": Type mismatch, cannot perform operation on types " + l_expr.getText() + " and " + r_expr.getText()); 
+					}
+						return "boolean"; 
+				}
+				if(expr.bin_op().cond_op() != null) {
+					if (type(l_expr).equals("boolean") && type(r_expr).equals("boolean")) { 
+						System.err.println("Error line " + expr.getStart().getLine() + ": Type mismatch, cannot perform operation on types " + l_expr.getText() + " and " + r_expr.getText()); 
+					}
+						return "boolean"; 
+				}
+				if(expr.bin_op().eq_op() != null) {
+					if (type(l_expr).equals(type(r_expr))) {
+						System.err.println("Error line " + expr.getStart().getLine() + ": Type mismatch, cannot perform operation on types " + l_expr.getText() + " and " + r_expr.getText()); 
+					}
+						return "boolean"; 
+				}
+			}
+		}
+		return null; 
 	}
-	*/
+	
 	public String type(DecafParser.LocationContext loc) {
 		
-		Scope scope = scopes.peek(); 
-		ScopeElement temp = scope.get(loc.ID()); 
-		System.out.println(temp.getVarType());
-		
-		return(temp.getVarType());
+		Scope scope = scopes.peek();
+		String varName = loc.ID().getText();
+		ScopeElement details = scope.get(varName); 
+		return(details.getVarType());
 	}
 	public String type(DecafParser.LiteralContext literal) {
 		
 		if(literal.INT_LITERAL() != null) {
 			return("int");
 		} else {
-			return("string");
+			return("boolean");
 		}
 	}
 	public String type(DecafParser.Method_callContext mContext) {
