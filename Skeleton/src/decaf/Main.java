@@ -37,6 +37,7 @@ public class Main {
                     System.in : new java.io.FileInputStream(CLI.infile);
             ANTLRInputStream antlrIOS = new ANTLRInputStream(inputStream);
 
+            // Allows for checking assignment of lexer tokens 
             if (CLI.target == CLI.SCAN || CLI.target == CLI.DEFAULT)
             {
                 DecafLexer lexer = new DecafLexer(antlrIOS);
@@ -71,6 +72,7 @@ public class Main {
                             	type = " STRING";
                             	break;
                             }
+                            // Return each token found to the user on a new line 
                             System.out.println (token.getLine() + type + " " + text);
                         }
                         done = true;
@@ -80,6 +82,7 @@ public class Main {
                     }
                 }
             }
+            // Allows for output of a parse tree 
             else if (CLI.target == CLI.PARSE)
             {
                 DecafLexer lexer = new DecafLexer(antlrIOS);
@@ -93,6 +96,7 @@ public class Main {
 	                System.out.println(formatted);
                 }
             }
+            // Allows for semantic checking 
              else if (CLI.target == CLI.INTER)
              {
                  DecafLexer lexer = new DecafLexer(antlrIOS);

@@ -63,13 +63,13 @@ SL_COMMENT : '//' (~'\n')* '\n' -> skip;
 
 // These two rules completely describe characters and strings, 
 // and make use of the ESC and NOTESC fragments described below
-// Character literals are composed of a <char> in single quotes
+// Character literals are composed of a char in single quotes
 CHAR_LITERAL : '\'' (ESC|NOTESC) '\'';
 
 // This rule says a string is contained within double quotes, 
 // and is one or more instances of either an ESC, a NOTESC
 // character or any other than a double quote.
-// String Literals are composed of <char>s enclosed in double quotes
+// String Literals are composed of chars enclosed in double quotes
 STRING_LITERAL : '"' (ESC|NOTESC)* '"';
 
 // This rule says a boolean can hold the values of true or false, and nothing else. 
@@ -84,9 +84,7 @@ INT_LITERAL : '-'?(DECIMAL_LITERAL|HEX_LITERAL);
 fragment
 HEX_LITERAL : '0x' HEX_DIGIT+; 
 
-// A rule that is marked as a fragment will NOT have a token created for it. So anything matching the rules above
-// will create a token in the output, but something matching the ESC rule below will only be used locally in the scope
-// of this file. 
+// A rule that is marked as a fragment will NOT have a token created for it.
 
 // ESC matches single quotes, double quotes, backslash, double backslashes, as well
 // the escape character for two character sequences such as newline, new tab and comment
@@ -114,11 +112,3 @@ HEX_DIGIT : (DIGIT|[a-f]|[A-F]);
 
 fragment 
 DECIMAL_LITERAL : DIGIT+ ;
-
-/*
-fragment 
-CHAR_LITERAL : '\' CHAR '\'; 
-
-fragment 
-STRING_LITERAL : '"' CHAR* '"' ;
-*/

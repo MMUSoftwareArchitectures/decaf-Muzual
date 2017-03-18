@@ -10,12 +10,12 @@
 parser grammar DecafParser;
 options { tokenVocab = DecafLexer; }
 
-// Rule to show that a program is defined by class, ID, then any amount of field or method declarations
-// within curly braces. The program is ended by the END OF FILE which is automatically provided by 
-// ANTLR and does not exist in the Lexer. 
 
+// Note the EOF token is not provided in Lexer due to being
+// included as part of ANTLR
 program: CLASS ID LCURLY (field_decl)* (method_decl)* RCURLY EOF;
 
+// field_name is split from field_decl to improve readability 
 field_decl: type field_name(COMMA field_name)* SEMICOLON ;
 field_name: (ID|ID LSQRBRK INT_LITERAL RSQRBRK);
 
@@ -48,6 +48,9 @@ method_name: ID;
 location: ID
 		| ID LSQRBRK expr RSQRBRK;
 
+// It is key to separate strong and weak operators
+// due to order of operations when parsing 
+// */% have higher priority than +- according to BIDMAS
 expr: location
 		| method_call
 		| literal
@@ -60,10 +63,15 @@ expr: location
 
 callout_arg: (expr | STRING_LITERAL);
 
+
+// The following rules deal with grouping tokens
+// for ease of use in rules
 bin_op: (rel_op | eq_op | cond_op);
 
+// "Strong", or higher priority mathematical operators
 strong_arith_op: (ARITHMULT | ARITHDIV | ARITHMOD);
 
+// "Weak", or lower priority mathematical operators 
 weak_arith_op: (ARITHPLUS | ARITHMINUS);
 
 rel_op: (GRTTHAN | LESTHAN | GRTEQUAL | LESEQUAL); 
