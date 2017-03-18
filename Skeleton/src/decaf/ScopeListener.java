@@ -325,6 +325,7 @@ public class ScopeListener extends DecafParserBaseListener {
 	/** 
 	 * Method to determine if variable exists 
 	 * 
+	 * @see Scope.inScope 
 	 * @param varName String the identifier of the variable
 	 * @return doesExist Boolean True or false depending on presence of variable 
 	 */
@@ -336,16 +337,32 @@ public class ScopeListener extends DecafParserBaseListener {
 		}
 	}
 
+/**
+ * 
+ * @author Miles Schofield
+ *
+ *	Scope class developed with reference to structure provided by Emma Norling
+ *	(Norling, 2017. Labs, week 8. Available on Moodle. Last accessed: 18/03/2017)
+ */
 	class Scope extends Hashtable<String, ScopeElement> {
 		final Scope parent;
 		
 		public Scope(Scope parent) {
 			this.parent = parent;
 		}
-	boolean inScope(String varName) {
-		if(super.containsKey(varName)){
-			return true;
-		}
-		return parent == null ? false : parent.inScope(varName); 
+		
+		/** 
+		 * Method to determine if varName is in Scope
+		 * 
+		 * Recursively called to check parent scopes if not in local scope 
+		 * 
+		 * @param varName String variable name to check
+		 * @return boolean True if exists, false if not
+		 */
+		boolean inScope(String varName) {
+			if(super.containsKey(varName)){
+				return true;
+			}
+			return parent == null ? false : parent.inScope(varName); 
 	}
 	}
