@@ -4,6 +4,7 @@ public class ScopeElement {
 
 	private String varName;
 	private String varType;
+	//private String varMethod; 
 	
 	public ScopeElement() {
 		super();
@@ -30,6 +31,15 @@ public class ScopeElement {
 	public void setVarType(String varType) {
 		this.varType = varType;
 	}
+	/*
+	public String getVarMethod() {
+		return varMethod; 
+	}
+	
+	public void setVarMethod(String varMethod) {
+		this.varMethod = varMethod; 
+	}
+	*/
 	
 	
 }

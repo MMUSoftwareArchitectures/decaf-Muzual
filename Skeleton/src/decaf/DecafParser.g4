@@ -19,7 +19,8 @@ program: CLASS ID LCURLY (field_decl)* (method_decl)* RCURLY EOF;
 field_decl: type field_name(COMMA field_name)* SEMICOLON ;
 field_name: (ID|ID LSQRBRK INT_LITERAL RSQRBRK);
 
-method_decl: (type | VOID) ID LPAREN ((type ID)(COMMA type ID)*)? RPAREN  block;
+method_decl: (type | VOID) ID LPAREN method_params? RPAREN  block;
+method_params: ((type ID)(COMMA type ID)*);
 
 block: LCURLY var_decl* statement*  RCURLY;
 

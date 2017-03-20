@@ -1,12 +1,9 @@
 package decaf;
 
 import java.util.Hashtable;
-
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.*;
-
 import decaf.DecafParser.Strong_arith_opContext;
-
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -61,10 +58,13 @@ public class ScopeListener extends DecafParserBaseListener {
 				scope.put(var.getVarName(), var);
 			}
 			
-			/**
-			 * Bad array size declaration. Checks for an array to not be size 0. 
-			 */
-			int varArraySize = Integer.parseInt((field.INT_LITERAL().getText())); 
+			int varArraySize; 
+			// Bad array size declaration. Checks for an array to not be size 0. 
+			if(field.INT_LITERAL().getText().contains("0x")) {
+				varArraySize = Integer.decode((field.INT_LITERAL().getText())); 
+			} else {
+				varArraySize = Integer.parseInt((field.INT_LITERAL().getText())); 
+			}
 			if(varArraySize == 0) System.err.println("Error line " + ctx.getStart().getLine() + ": Invalid array size on array named: " + field.ID().getText());
 			
 		}
@@ -84,10 +84,7 @@ public class ScopeListener extends DecafParserBaseListener {
 			
 			for(TerminalNode variable : variables) {
 				ScopeElement var = new ScopeElement(variable.getText(), ctx.type().getText()); 
-				/**
-				 * Checks existence of variable already to determine if needs to store or error
-				 * @see varInScope 
-				 */
+				
 				if(varInScope(var.getVarName())) {
 					System.err.println("Error line " + ctx.getStart().getLine() + ": Already exists: " + var.getVarName() + ", " + var.getVarType());
 				} else {	
@@ -112,10 +109,7 @@ public class ScopeListener extends DecafParserBaseListener {
 		// and requires calling separately. 
 		DecafParser.ExprContext expr = ctx.expr(0); 
 		
-		/**
-		 * Checks existence of variable already to determine if needs to error
-		 * @see varInScope 
-		 */
+		
 		TerminalNode variable = ctx.location().ID(); 
 		if (!(varInScope(variable.getText()))) System.err.println("Error line " + ctx.getStart().getLine() + ": Variable not declared");
 		
@@ -184,40 +178,44 @@ public class ScopeListener extends DecafParserBaseListener {
 			// Note that all areas return the expected type, even after errors, in order to 
 			// allow the compiler to continue, returning as many errors as possible in one pass 
 			
+			String l_expr_type = type(l_expr);
+			String r_expr_type = type(r_expr); 
+			String typeMismatch = ("Error line " + expr.getStart().getLine() + ": Type mismatch, cannot perform operation on variables "
+			+ l_expr.getText() + "(" + l_expr_type + ")" + " and " + r_expr.getText() + "(" + r_expr_type + ")"); 
 			
 			// If contains Strong ops (*/%) - Check both types are INT. 
 			if(expr.strong_arith_op() != null) {
-				if (!(type(l_expr).equals("int") && type(r_expr).equals("int"))) {
-					System.err.println("Error line " + expr.getStart().getLine() + ": Type mismatch, cannot perform operation on types " + l_expr.getText() + " and " + r_expr.getText()); 
+				if (!(l_expr_type.equals("int") && r_expr_type.equals("int"))) {
+					System.err.println(typeMismatch); 
 				}
 					return "int"; 
 			} 
 			// If contains Weak ops (+-) - Check both types are INT. 
 			if(expr.weak_arith_op() != null) {
-				if (!(type(l_expr).equals("int") && type(r_expr).equals("int"))) {
-					System.err.println("Error line " + expr.getStart().getLine() + ": Type mismatch, cannot perform operation on types " + l_expr.getText() + " and " + r_expr.getText()); 
+				if (!(l_expr_type.equals("int") && r_expr_type.equals("int"))) {
+					System.err.println(typeMismatch); 
 				}
 					return "int"; 
 			}
 			if(expr.bin_op() != null) { 
 				// If contains Rel Ops (>=<=) - Check both types are INT. 
 				if(expr.bin_op().rel_op() != null) {
-					if (!(type(l_expr).equals("int") && type(r_expr).equals("int"))) {
-						System.err.println("Error line " + expr.getStart().getLine() + ": Type mismatch, cannot perform operation on types " + l_expr.getText() + " and " + r_expr.getText()); 
+					if (!(l_expr_type.equals("int") && r_expr_type.equals("int"))) {
+						System.err.println(typeMismatch); 
 					}
 						return "boolean"; 
 				}
 				// If contains conditional Ops (and, or) - Check both types are BOOLEAN. 
 				if(expr.bin_op().cond_op() != null) {
-					if (!(type(l_expr).equals("boolean") && type(r_expr).equals("boolean"))) { 
-						System.err.println("Error line " + expr.getStart().getLine() + ": Type mismatch, cannot perform operation on types " + l_expr.getText() + " and " + r_expr.getText()); 
+					if (!(l_expr_type.equals("boolean") && r_expr_type.equals("boolean"))) { 
+						System.err.println(typeMismatch); 
 					}
 						return "boolean"; 
 				}
 				// If contains equality (== !=) - Check both types are the SAME. Can be BOOL or INT... 
 				if(expr.bin_op().eq_op() != null) {
-					if (!(type(l_expr).equals(type(r_expr)))) {
-						System.err.println("Error line " + expr.getStart().getLine() + ": Type mismatch, cannot perform operation on types " + l_expr.getText() + " and " + r_expr.getText()); 
+					if (!(l_expr_type.equals(r_expr_type))) {
+						System.err.println(typeMismatch); 
 					}
 						return "boolean"; 
 				}
@@ -283,7 +281,44 @@ public class ScopeListener extends DecafParserBaseListener {
 	 */
 	@Override
 	public void enterMethod_decl(DecafParser.Method_declContext ctx) {
-		if((ctx.ID().get(0).getText()).equals("main")) foundMain = true;
+		if((ctx.ID().getText()).equals("main")) foundMain = true;
+		
+		scopes.push(new Scope(scopes.peek()));
+		Scope scope = scopes.peek(); 
+		
+		DecafParser.Method_paramsContext parameterCollection = null;
+		if(ctx.method_params() != null) {
+			parameterCollection = ctx.method_params(); 
+			List<TerminalNode> params = parameterCollection.ID(); 
+		
+		for(int i = 0; i < params.size(); i++) { 
+			ScopeElement var = new ScopeElement(parameterCollection.ID().get(i).getText(), parameterCollection.type().get(i).getText());
+			scope.put(var.getVarName(), var);
+		}
+		}
+	}
+	
+	@Override
+	public void exitMethod_decl(DecafParser.Method_declContext ctx) {
+		scopes.pop(); 
+	}
+	
+	
+	@Override
+	public void enterMethod_call(DecafParser.Method_callContext ctx) {
+		Scope scope = scopes.peek(); 
+		
+		String methodName = null; 
+		if(ctx.method_name() != null) {
+			methodName = ctx.method_name().getText();
+			System.err.println(methodName);
+		}
+		
+	}
+	
+	@Override
+	public void enterProgram(DecafParser.ProgramContext ctx) {
+		scopes.push(new Scope(scopes.peek()));
 	}
 	
 	/** 
@@ -346,9 +381,11 @@ public class ScopeListener extends DecafParserBaseListener {
  */
 	class Scope extends Hashtable<String, ScopeElement> {
 		final Scope parent;
+		String scopeName; 
 		
 		public Scope(Scope parent) {
 			this.parent = parent;
+			this.scopeName = scopeName;
 		}
 		
 		/** 
