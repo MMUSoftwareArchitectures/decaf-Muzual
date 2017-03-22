@@ -1,10 +1,13 @@
 package decaf;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ScopeElement {
 
 	private String varName;
 	private String varType;
-	//private String varMethod; 
+	private List<ScopeElement> mParams = new ArrayList<ScopeElement>();
 	
 	public ScopeElement() {
 		super();
@@ -31,15 +34,16 @@ public class ScopeElement {
 	public void setVarType(String varType) {
 		this.varType = varType;
 	}
-	/*
-	public String getVarMethod() {
-		return varMethod; 
+	
+	public List<ScopeElement> getParams() {
+		return mParams; 
 	}
 	
-	public void setVarMethod(String varMethod) {
-		this.varMethod = varMethod; 
+	public void setParams(List<ScopeElement> params) {
+		for(int i = 0; i < params.size();  i++) {
+			//this.mParams = mParams.add(params.get(i));
+		}
 	}
-	*/
 	
 	
 }

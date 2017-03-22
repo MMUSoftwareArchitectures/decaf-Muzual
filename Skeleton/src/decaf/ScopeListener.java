@@ -1,9 +1,14 @@
 package decaf;
 
 import java.util.Hashtable;
+
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.*;
+
+import decaf.DecafParser.BlockContext;
+import decaf.DecafParser.Method_declContext;
 import decaf.DecafParser.Strong_arith_opContext;
+
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -20,6 +25,7 @@ public class ScopeListener extends DecafParserBaseListener {
 	 * Set to True once a main is discovered. 
 	 */
 	private boolean foundMain = false;
+	private boolean doesReturn; 
 	
 	public ScopeListener() {
 		scopes = new Stack<Scope>();
@@ -45,26 +51,20 @@ public class ScopeListener extends DecafParserBaseListener {
 		Scope scope = scopes.peek();
 		
 		for (DecafParser.Field_nameContext field : fields) {
-			
 			ScopeElement var = new ScopeElement(field.ID().getText(), ctx.type().getText()); 
-			
 			/**
 			 * Checks existence of variable already to determine if needs to store or error
 			 *  @see varInScope 
 			 */
-			if(varInScope(var.getVarName())) {
-				System.err.println("Already exists" + var.getVarName()+ var.getVarType());
-			} else {	
-				scope.put(var.getVarName(), var);
-			}
+			if(varInScope(var.getVarName())) System.err.println("Already exists" + var.getVarName()+ var.getVarType());
+		    else scope.put(var.getVarName(), var);
 			
 			int varArraySize; 
+			
 			// Bad array size declaration. Checks for an array to not be size 0. 
-			if(field.INT_LITERAL().getText().contains("0x")) {
-				varArraySize = Integer.decode((field.INT_LITERAL().getText())); 
-			} else {
-				varArraySize = Integer.parseInt((field.INT_LITERAL().getText())); 
-			}
+			if(field.INT_LITERAL().getText().contains("0x")) varArraySize = Integer.decode((field.INT_LITERAL().getText())); 
+			else varArraySize = Integer.parseInt((field.INT_LITERAL().getText())); 
+			
 			if(varArraySize == 0) System.err.println("Error line " + ctx.getStart().getLine() + ": Invalid array size on array named: " + field.ID().getText());
 			
 		}
@@ -86,10 +86,8 @@ public class ScopeListener extends DecafParserBaseListener {
 				ScopeElement var = new ScopeElement(variable.getText(), ctx.type().getText()); 
 				
 				if(varInScope(var.getVarName())) {
-					System.err.println("Error line " + ctx.getStart().getLine() + ": Already exists: " + var.getVarName() + ", " + var.getVarType());
-				} else {	
-					scope.put(var.getVarName(), var);
-				}
+					System.err.println("Error line " + ctx.getStart().getLine() + ": Cannot create " + var.getVarName() + ", " + var.getVarType() + ". Variable exists elsewhere");
+				} else scope.put(var.getVarName(), var);
 			}
 	}
 	
@@ -107,37 +105,56 @@ public class ScopeListener extends DecafParserBaseListener {
 		Scope scope = scopes.peek();
 		// Similarly to field_name, expr's context cannot be seen within StatementContext (ctx) 
 		// and requires calling separately. 
-		DecafParser.ExprContext expr = ctx.expr(0); 
+		if(ctx.location() != null) {
+			TerminalNode variable = ctx.location().ID(); 
+			if (!(varInScope(variable.getText()))) {
+				System.err.println("Error line: " + ctx.getStart().getLine() + ". Variable not declared");
+			} else { 
+				/**
+				 * Type checking for the Left Hand Side (LHS) of an expression
+				 * 
+				 * In the case of assignment (e.g. x=), .getVarType can be called on 
+				 * ScopeElement objects to determine the type.
+				 * 
+				 * @see ScopeElement 
+				 */
+				ScopeElement temp = scope.get(variable.getText()); 
+				String LHS_Type = temp.getVarType();
+				
+				/** 
+				 * Determining the type of the RHS of a statement (expression)
+				 * 
+				 * Utilises a method recursive method for type checking expressions
+				 * 
+				 * @see type
+				 */
+				if(ctx.expr() != null) { 
+					DecafParser.ExprContext expr = ctx.expr(0); 
+					String RHS_Type = type(expr);
+					// Determines if RHS and LHS are equivalent types 
+					if(!(LHS_Type.equals(RHS_Type))){
+						System.err.println("Error line: " + ctx.getStart().getLine() + ". Type mismatch, cannot perform operation on types " + LHS_Type + " and " + RHS_Type); 
+					}
+				}
+			} 
+		}
 		
-		
-		TerminalNode variable = ctx.location().ID(); 
-		if (!(varInScope(variable.getText()))) System.err.println("Error line " + ctx.getStart().getLine() + ": Variable not declared");
-		
-		
-		/**
-		 * Type checking for the Left Hand Side (LHS) of an expression
-		 * 
-		 * In the case of assignment (e.g. x=), .getVarType can be called on 
-		 * ScopeElement objects to determine the type.
-		 * 
-		 * @see ScopeElement 
-		 */
-		ScopeElement temp = scope.get(variable.getText()); 
-		String LHS_Type = temp.getVarType();
-		
-		/** 
-		 * Determining the type of the RHS of a statement (expression)
-		 * 
-		 * Utilises a method recursive method for type checking expressions
-		 * 
-		 * @see type
-		 */
-		String RHS_Type = type(expr);
-		
-		// Determines if RHS and LHS are equivalent types 
-		if(!(LHS_Type.equals(RHS_Type))){
-			System.err.println("Error line " + ctx.getStart().getLine() + ": Type mismatch, cannot perform operation on types " + LHS_Type + " and " + RHS_Type); 
-	}
+		if(ctx.RETURN() != null) {
+			doesReturn = true; 
+			if(ctx.getParent().getParent() != null) {
+				DecafParser.Method_declContext M_declContext = (Method_declContext) ctx.getParent().getParent();
+				if(ctx.expr() != null) {
+					DecafParser.ExprContext expr = ctx.expr(0); 
+					if(M_declContext.VOID() != null ) {
+						System.err.println("Error line: " + ctx.getStart().getLine() + " RETURN cannot be called for method: \""+ M_declContext.ID().getText() + "\". Return type is VOID"); 
+					} else { 
+						if(!(type(expr).equals(M_declContext.type().getText()))) {
+							System.err.println("Error line: " + ctx.getStart().getLine() + ". RETURN must return the same type as method type");
+							}
+					}
+				} 
+			}  
+		}
 	}
 	
 	/**
@@ -155,21 +172,20 @@ public class ScopeListener extends DecafParserBaseListener {
 		DecafParser.ExprContext l_expr = null;
 		DecafParser.ExprContext r_expr = null;
 		DecafParser.LocationContext location = expr.location();
-		
+		DecafParser.LiteralContext literal = expr.literal(); 
+		DecafParser.Method_callContext Method_call = expr.method_call(); 
 		
 		if (location != null) return type(location);
-		if (expr.literal() != null) return type (expr.literal());
-		if (expr.method_call() != null) return type (expr.method_call());
+		if (literal != null) return type(literal);
+		if (Method_call != null) return type(Method_call);
 		
 		// Anything beyond here involves at least one subexpression
 		if (expr.expr().size() == 1) {
 			// IF Unary Expression:
 			l_expr = expr.expr(0);
-			
 			if(l_expr.EXCLMRK() != null) return "boolean"; // Boolean NOT
 			else if(l_expr.ARITHMINUS() != null) return "int"; // Unary Minus 
 			else return type(l_expr);
-			
 		} else { 
 			// IF Binary Expression: 
 			l_expr = expr.expr(0);
@@ -235,7 +251,6 @@ public class ScopeListener extends DecafParserBaseListener {
 	 * @return details.getVarType String Type of the location 
 	 */
 	public String type(DecafParser.LocationContext loc) {
-		
 		Scope scope = scopes.peek();
 		String varName = loc.ID().getText();
 		ScopeElement details = scope.get(varName); 
@@ -282,9 +297,17 @@ public class ScopeListener extends DecafParserBaseListener {
 	@Override
 	public void enterMethod_decl(DecafParser.Method_declContext ctx) {
 		if((ctx.ID().getText()).equals("main")) foundMain = true;
+		Scope scope = scopes.peek();
 		
-		scopes.push(new Scope(scopes.peek()));
-		Scope scope = scopes.peek(); 
+		// Checking method TYPE
+		if(ctx.type() != null) {
+			ScopeElement method = new ScopeElement(ctx.ID().getText(), ctx.type().getText()); 
+			scope.put(method.getVarName(), method); 
+		} else {
+			doesReturn = true; 
+			ScopeElement method = new ScopeElement(ctx.ID().getText(), ctx.VOID().getText()); 
+			scope.put(method.getVarName(), method); 
+		}
 		
 		DecafParser.Method_paramsContext parameterCollection = null;
 		if(ctx.method_params() != null) {
@@ -293,17 +316,21 @@ public class ScopeListener extends DecafParserBaseListener {
 		
 		for(int i = 0; i < params.size(); i++) { 
 			ScopeElement var = new ScopeElement(parameterCollection.ID().get(i).getText(), parameterCollection.type().get(i).getText());
-			scope.put(var.getVarName(), var);
+			ScopeElement currentMethod = scope.get(ctx.ID().getText());
+			//currentMethod.setParams(var);
+			scope.put(currentMethod.getVarName(), currentMethod);
 		}
 		}
+		//scopes.push(new Scope(scopes.peek()));
 	}
 	
 	@Override
 	public void exitMethod_decl(DecafParser.Method_declContext ctx) {
-		scopes.pop(); 
+		//scopes.pop(); 
+		if(doesReturn == false) System.err.println("Error line: " + ctx.getStop().getLine() +". Method name: \"" + ctx.ID().getText() +  "\" must have a return statement"); 
 	}
 	
-	
+	/*
 	@Override
 	public void enterMethod_call(DecafParser.Method_callContext ctx) {
 		Scope scope = scopes.peek(); 
@@ -313,12 +340,12 @@ public class ScopeListener extends DecafParserBaseListener {
 			methodName = ctx.method_name().getText();
 			System.err.println(methodName);
 		}
-		
 	}
+	*/
 	
 	@Override
 	public void enterProgram(DecafParser.ProgramContext ctx) {
-		scopes.push(new Scope(scopes.peek()));
+		//scopes.push(new Scope(scopes.peek()));
 	}
 	
 	/** 
@@ -338,12 +365,14 @@ public class ScopeListener extends DecafParserBaseListener {
 	public void enterEveryRule(ParserRuleContext ctx) {
 		// TODO Auto-generated method stub
 		super.enterEveryRule(ctx);
-		Scope scope = scopes.peek();
+		System.err.println("entering new rule!");
+		/*Scope scope = scopes.peek();
 		Set<String> keys = scope.keySet(); 
 		for(String key: keys){
 			System.out.println(key); 
 		}
-	} */
+	}
+*/ 
 	
 	/* 
 	@Override
