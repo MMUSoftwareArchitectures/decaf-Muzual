@@ -131,6 +131,13 @@ public class ScopeListener extends DecafParserBaseListener {
 					if(!(LHS_Type.equals(RHS_Type))){
 						System.err.println("Error line: " + ctx.getStart().getLine() + ". Type mismatch, cannot perform operation on types " + LHS_Type + " and " + RHS_Type); 
 					}
+					if(ctx.assign_op() != null) {
+						if(ctx.assign_op().ARITHPLUS() != null || ctx.assign_op().ARITHMINUS() != null) {
+							if(!(LHS_Type.equals("int") && RHS_Type.equals("int"))) {
+								System.err.print("Error line: " + ctx.getStart().getLine() + ". Both operands of += and -= are required to be integers"); 
+							}
+						}
+					}
 				}
 			}
 			if(ctx.location().expr() != null) {
@@ -232,7 +239,7 @@ public class ScopeListener extends DecafParserBaseListener {
 				// If contains Rel Ops (>=<=) - Check both types are INT. 
 				if(expr.bin_op().rel_op() != null) {
 					if (!(l_expr_type.equals("int") && r_expr_type.equals("int"))) {
-						System.err.println(typeMismatch); 
+						System.err.println("Error line: " + expr.getStart().getLine() + ". Types for relational operators must both be integers"); 
 					}
 					return "boolean"; 
 				}
