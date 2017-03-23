@@ -13,11 +13,9 @@ BREAK : 'break';
 CALLOUT : 'callout'; 
 CONTINUE : 'continue';
 ELSE : 'else';
-FALSE : 'false';
 FOR : 'for';
 IF : 'if';
 RETURN : 'return';
-TRUE : 'true';
 VOID : 'void'; 
 INT : 'int';
 
@@ -48,6 +46,9 @@ NOTEQUAL: '!=';
 AND: '&&';
 OR: '||'; 
 
+// This rule says a boolean can hold the values of true or false, and nothing else. 
+BOOL_LITERAL : (TRUE | FALSE);
+
 // This rule shows that ID must start with a letter or underscore, then
 // any combination of digits, letters or underscores. 
 ID : (ALPHA|'_') (ALPHA_NUM|'_')*;
@@ -71,9 +72,6 @@ CHAR_LITERAL : '\'' (ESC|NOTESC) '\'';
 // character or any other than a double quote.
 // String Literals are composed of chars enclosed in double quotes
 STRING_LITERAL : '"' (ESC|NOTESC)* '"';
-
-// This rule says a boolean can hold the values of true or false, and nothing else. 
-BOOL_LITERAL : (TRUE | FALSE);
 
 // This rule says an integer is either one or no negative signs 
 // followed by one or more integer of either decimal or hex type
@@ -112,3 +110,9 @@ HEX_DIGIT : (DIGIT|[a-f]|[A-F]);
 
 fragment 
 DECIMAL_LITERAL : DIGIT+ ;
+
+fragment
+FALSE : 'false';
+
+fragment
+TRUE : 'true';
