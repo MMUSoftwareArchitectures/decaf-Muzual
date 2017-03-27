@@ -340,7 +340,7 @@ public class ScopeListener extends DecafParserBaseListener {
 			ScopeElement method = new ScopeElement(ctx.ID().getText(), ctx.VOID().getText()); 
 			scope.put(method.getVarName(), method); 
 		}
-//1
+
 		DecafParser.Method_paramsContext parameterCollection = null;
 		if(ctx.method_params() != null) {
 			parameterCollection = ctx.method_params(); 
