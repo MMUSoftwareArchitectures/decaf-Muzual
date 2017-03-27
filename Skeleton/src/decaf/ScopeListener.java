@@ -25,6 +25,10 @@ public class ScopeListener extends DecafParserBaseListener {
 	 * Set to True once a main is discovered. 
 	 */
 	private boolean foundMain = false;
+	/**
+	 * Boolean to determine if a method returns 
+	 * Set to true once a method has a return statement 
+	 */
 	private boolean doesReturn; 
 
 	public ScopeListener() {
@@ -46,7 +50,7 @@ public class ScopeListener extends DecafParserBaseListener {
 	public void enterField_decl(DecafParser.Field_declContext ctx) {
 		// The use of DecafParser.Field_nameContext is required due to the 
 		// separation of Field_name and Field_decl in the DecafParser, lines 19 and 20 respectively
-		// Information within field_name is not available via the Field_decl Context 
+		// Information within field_name is not available via the Field_declContext parameter
 		List<DecafParser.Field_nameContext> fields = ctx.field_name(); 
 		Scope scope = scopes.peek();
 
@@ -61,16 +65,14 @@ public class ScopeListener extends DecafParserBaseListener {
 
 			int varArraySize; 
 
-			// Bad array size declaration. Checks for an array to not be size 0. 
+			// Bad array size declaration. Checks for an array to be greater than size 0 (non-existant, or minus sizes are not allowed) 
 			if(field.INT_LITERAL() != null) {
 				if(field.INT_LITERAL().getText().contains("0x")) varArraySize = Integer.decode((field.INT_LITERAL().getText())); 
 				else varArraySize = Integer.parseInt((field.INT_LITERAL().getText())); 
 
 				if(varArraySize <= 0) System.err.println("Error line " + ctx.getStart().getLine() + ": Invalid array size on array named: " + field.ID().getText()); 
 				else scope.get(var.getVarName()).setVarType("intArray");
-				
 			}
-
 		}
 	}
 
@@ -84,8 +86,9 @@ public class ScopeListener extends DecafParserBaseListener {
 	@Override
 	public void enterVar_decl(DecafParser.Var_declContext ctx) {
 		Scope scope = scopes.peek();
+		
+		// Iterate the list of IDs that occur in var_decl 
 		List<TerminalNode> variables = ctx.ID();
-
 		for(TerminalNode variable : variables) {
 			ScopeElement var = new ScopeElement(variable.getText(), ctx.type().getText()); 
 
@@ -114,27 +117,19 @@ public class ScopeListener extends DecafParserBaseListener {
 			if (!(varInScope(variable.getText()))) {
 				System.err.println("Error line: " + ctx.getStart().getLine() + ". Variable not declared");
 			} else {
-				
-				/**
-				 * Determining Types
-				 * 
-				 * Utilising the type methods to determine type of different sides of an expression 
-				 * 
-				 * @see type(loc)
-				 * @see type(expr) 
-				 */
+				// ELSE: Variable has been declared - determine type of LHS, and then type of RHS if exists 
 				String LHS_Type = type(ctx.location()); 
+				
 				if(ctx.expr() != null) { 
 					DecafParser.ExprContext expr = ctx.expr(0); 
 					String RHS_Type = type(expr);
-					// Determines if RHS and LHS are equivalent types 
-					if(!(LHS_Type.equals(RHS_Type))){
+					if(!(LHS_Type.equals(RHS_Type))){ // are LHS and RHS the same type? 
 						System.err.println("Error line: " + ctx.getStart().getLine() + ". Type mismatch, cannot perform operation on types " + LHS_Type + " and " + RHS_Type); 
 					}
 					if(ctx.assign_op() != null) {
 						if(ctx.assign_op().ARITHPLUS() != null || ctx.assign_op().ARITHMINUS() != null) {
 							if(!(LHS_Type.equals("int") && RHS_Type.equals("int"))) {
-								System.err.print("Error line: " + ctx.getStart().getLine() + ". Both operands of += and -= are required to be integers"); 
+								System.err.print("Error line: " + ctx.getStart().getLine() + ". Both operands of += and -= are required to be type int"); 
 							}
 						}
 					}
@@ -145,11 +140,11 @@ public class ScopeListener extends DecafParserBaseListener {
 				if(!(type(expr).equals("int"))) System.err.println("Error line: " + ctx.getStart().getLine() + ". Array index must be type int"); 
 				if(ctx.assign_op() != null) {
 					expr = ctx.expr(0);
-					if(type(expr).equals("intArray")) System.err.println("Error line: " + ctx.getStart().getLine() + ". Cannot assign array position as another array.");
+					if(type(expr).equals("intArray")) System.err.println("Error line: " + ctx.getStart().getLine() + ". Attempted array nest. Array position cannot hold an array");
 				}
 			}
 		}
-
+		// Checking return types of methods 
 		if(ctx.RETURN() != null) {
 			doesReturn = true; 
 			if(ctx.getParent().getParent() != null) {
@@ -165,7 +160,8 @@ public class ScopeListener extends DecafParserBaseListener {
 					}
 				} 
 			}  
-		} 
+		}  
+		// IF statement must have a condition that can evaluate as a boolean 
 		if(ctx.IF() != null) {
 			if(ctx.expr() != null) {
 				DecafParser.ExprContext expr = ctx.expr(0); 
@@ -174,6 +170,7 @@ public class ScopeListener extends DecafParserBaseListener {
 				}
 			}
 		}
+		// Handling FOR loops 
 		if(ctx.FOR() != null) {
 			System.err.println("Trying to use a for loop in my program? I don't think so!"); 
 		}
@@ -218,8 +215,8 @@ public class ScopeListener extends DecafParserBaseListener {
 
 			String l_expr_type = type(l_expr);
 			String r_expr_type = type(r_expr); 
-			String typeMismatch = ("Error line " + expr.getStart().getLine() + ": Type mismatch, cannot perform operation on variables "
-					+ l_expr.getText() + "(" + l_expr_type + ")" + " and " + r_expr.getText() + "(" + r_expr_type + ")"); 
+			String typeMismatch = ("Error line " + expr.getStart().getLine() + ". Type mismatch, cannot perform operation on variables " + 
+					 l_expr.getText() + "(" + l_expr_type + ")" + " and " + r_expr.getText() + "(" + r_expr_type + ")"); 
 
 			// If contains Strong ops (*/%) - Check both types are INT. 
 			if(expr.strong_arith_op() != null) {
@@ -239,7 +236,8 @@ public class ScopeListener extends DecafParserBaseListener {
 				// If contains Rel Ops (>=<=) - Check both types are INT. 
 				if(expr.bin_op().rel_op() != null) {
 					if (!(l_expr_type.equals("int") && r_expr_type.equals("int"))) {
-						System.err.println("Error line: " + expr.getStart().getLine() + ". Types for relational operators must both be integers"); 
+						System.err.println("Error line: " + expr.getStart().getLine() + ". Type mismatch. relational operators must both be integers " + 
+								 l_expr.getText() + "(" + l_expr_type + ")" + " and " + r_expr.getText() + "(" + r_expr_type + ")"); 
 					}
 					return "boolean"; 
 				}
@@ -276,6 +274,10 @@ public class ScopeListener extends DecafParserBaseListener {
 		Scope scope = scopes.peek();
 		String varName = loc.ID().getText();
 		ScopeElement details = scope.get(varName); 
+		// if a "[" is in the location, make the assumption it is an array 
+		// if statement responsible for "unpacking" arrays, to their basic types
+		// type intArray is therefore equivalent to int in this instance, as checking occurs
+		// when determining if an array position holds the correct type for an array
 		if(loc.LSQRBRK() != null) {
 			if(details.getVarType().equals("intArray")) return("int");
 			else return("boolean");
@@ -307,7 +309,6 @@ public class ScopeListener extends DecafParserBaseListener {
 	 */
 	public String type(DecafParser.Method_callContext mContext) {
 		Scope scope = scopes.peek();
-		// LOOK AT SCOPE ABOVE!
 		// When a method is called: .parent is the method_decl, 
 		// .parent.parent is the program contexts (which contain information
 		// on every method declared) 
@@ -327,6 +328,7 @@ public class ScopeListener extends DecafParserBaseListener {
 	@Override
 	public void enterMethod_decl(DecafParser.Method_declContext ctx) {
 		if((ctx.ID().getText()).equals("main")) foundMain = true;
+		doesReturn = false; 
 		Scope scope = scopes.peek();
 
 		// Checking method TYPE
@@ -357,7 +359,7 @@ public class ScopeListener extends DecafParserBaseListener {
 	@Override
 	public void exitMethod_decl(DecafParser.Method_declContext ctx) {
 		scopes.pop(); 
-		if(doesReturn == false) System.err.println("Error line: " + ctx.getStop().getLine() +". Method name: \"" + ctx.ID().getText() +  "\" must have a return statement"); 
+		if(doesReturn == false && ctx.type() != null) System.err.println("Error line: " + ctx.getStop().getLine() +". Method name: \"" + ctx.ID().getText() +  "\" must have a return statement"); 
 	}
 
 	/*
