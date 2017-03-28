@@ -129,6 +129,7 @@ public class ScopeListener extends DecafParserBaseListener {
 					}
 				}
 			}
+			// Checking type for an array
 			if(ctx.location().expr() != null) {
 				DecafParser.ExprContext expr = ctx.location().expr(); 
 				if(!(type(expr).equals("int"))) System.err.println("Error line: " + ctx.getStart().getLine() + ". Array index must be type int"); 

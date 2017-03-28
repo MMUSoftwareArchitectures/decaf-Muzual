@@ -1,5 +1,5 @@
 /*
- * A skeleton for your parser, provided by Emma Norling.
+ * A skeleton for the parser, provided by Emma Norling.
  * Extended by Miles Schofield
  * 
  *
@@ -19,6 +19,8 @@ program: CLASS ID LCURLY (field_decl)* (method_decl)* RCURLY EOF;
 field_decl: type field_name(COMMA field_name)* SEMICOLON ;
 field_name: (ID|ID LSQRBRK INT_LITERAL RSQRBRK);
 
+// similar split on method params to improve readability and
+// ease of writing ScopeListener 
 method_decl: (type | VOID) ID LPAREN method_params? RPAREN  block;
 method_params: ((type ID)(COMMA type ID)*);
 

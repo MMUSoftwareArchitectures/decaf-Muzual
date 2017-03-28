@@ -89,12 +89,12 @@ public class Main {
                 CommonTokenStream tokens = new CommonTokenStream(lexer);
                 DecafParser parser = new DecafParser (tokens);
                 ParseTree tree = parser.program();
-                //if (CLI.debug) {
+                if (CLI.debug) {
                     TreePrinterListener listener = new TreePrinterListener(parser);
 	                ParseTreeWalker.DEFAULT.walk(listener, tree);
 	                String formatted = listener.toString();
 	                System.out.println(formatted);
-                //}
+                }
             }
             // Allows for semantic checking 
              else if (CLI.target == CLI.INTER)

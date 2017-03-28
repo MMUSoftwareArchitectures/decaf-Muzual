@@ -66,23 +66,17 @@ SL_COMMENT : '//' (~'\n')* '\n' -> skip;
 // and make use of the ESC and NOTESC fragments described below
 // Character literals are composed of a char in single quotes
 CHAR_LITERAL : '\'' (ESC|NOTESC) '\'';
-
-// This rule says a string is contained within double quotes, 
-// and is one or more instances of either an ESC, a NOTESC
-// character or any other than a double quote.
-// String Literals are composed of chars enclosed in double quotes
 STRING_LITERAL : '"' (ESC|NOTESC)* '"';
 
 // This rule says an integer is either one or no negative signs 
 // followed by one or more integer of either decimal or hex type
 INT_LITERAL : '-'?(DECIMAL_LITERAL|HEX_LITERAL);
 
-// this rule says a hex number is an integer from 0-9 followed by either case 
-// of a-f (shown by the fragment hex_digit) 
+
+// A rule that is marked as a fragment will NOT have a token created for it
+
 fragment
 HEX_LITERAL : '0x' HEX_DIGIT+; 
-
-// A rule that is marked as a fragment will NOT have a token created for it.
 
 // ESC matches single quotes, double quotes, backslash, double backslashes, as well
 // the escape character for two character sequences such as newline, new tab and comment
@@ -104,7 +98,6 @@ ALPHA : ([a-z]|[A-Z]);
 fragment 
 DIGIT : [0-9];
 
-// HEX_DIGIT Rule to show that hex can be either a number, or either case of A-F
 fragment 
 HEX_DIGIT : (DIGIT|[a-f]|[A-F]);
 
