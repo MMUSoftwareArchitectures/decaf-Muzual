@@ -1,16 +1,10 @@
 package decaf;
 
 import java.util.Hashtable;
-
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.*;
-
-import decaf.DecafParser.BlockContext;
 import decaf.DecafParser.Method_declContext;
-import decaf.DecafParser.Strong_arith_opContext;
-
 import java.util.List;
-import java.util.Set;
 import java.util.Stack;
 
 public class ScopeListener extends DecafParserBaseListener {
