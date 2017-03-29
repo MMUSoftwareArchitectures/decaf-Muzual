@@ -1,9 +1,13 @@
 package decaf;
 
 import java.util.Hashtable;
+
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.*;
+
 import decaf.DecafParser.Method_declContext;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
@@ -167,7 +171,11 @@ public class ScopeListener extends DecafParserBaseListener {
 		}
 		// Handling FOR loops 
 		if(ctx.FOR() != null) {
-			System.err.println("Trying to use a for loop in my program? I don't think so!"); 
+		DecafParser.ExprContext expr = ctx.expr(0); 
+		DecafParser.ExprContext expr1 = ctx.expr(1); 
+			if(!(type(expr)).equals("int") && (type(expr1)).equals("int")) {
+				System.err.println("Error line: " + ctx.getStart().getLine() + ". For loop parameters must be type int");
+			}
 		}
 	}
 
@@ -303,10 +311,11 @@ public class ScopeListener extends DecafParserBaseListener {
 	 * @return details.getVarType() String type of method_call 
 	 */
 	public String type(DecafParser.Method_callContext mContext) {
+		if(mContext.CALLOUT() != null) return("int"); 
 		Scope scope = scopes.peek();
 		// When a method is called: .parent is the method_decl, 
 		// .parent.parent is the program contexts (which contain information
-		// on every method declared) 
+		// on every method declared)
 		ScopeElement details = scope.parent.parent.get(mContext.method_name().getText());
 		return(details.getVarType()); 
 	}
@@ -335,7 +344,7 @@ public class ScopeListener extends DecafParserBaseListener {
 			ScopeElement method = new ScopeElement(ctx.ID().getText(), ctx.VOID().getText()); 
 			scope.put(method.getVarName(), method); 
 		}
-
+		// enter method decl 
 		DecafParser.Method_paramsContext parameterCollection = null;
 		if(ctx.method_params() != null) {
 			parameterCollection = ctx.method_params(); 
@@ -344,9 +353,7 @@ public class ScopeListener extends DecafParserBaseListener {
 			for(int i = 0; i < params.size(); i++) { 
 				ScopeElement var = new ScopeElement(parameterCollection.ID().get(i).getText(), parameterCollection.type().get(i).getText());
 				currentMethod.setParams(var);
-				System.err.println(currentMethod.getParams()); 
 			}
-			scope.put(currentMethod.getVarName(), currentMethod);
 		}
 		scopes.push(new Scope(scopes.peek()));
 	}
@@ -357,18 +364,29 @@ public class ScopeListener extends DecafParserBaseListener {
 		if(doesReturn == false && ctx.type() != null) System.err.println("Error line: " + ctx.getStop().getLine() +". Method name: \"" + ctx.ID().getText() +  "\" must have a return statement"); 
 	}
 
-	/*
+	
 	@Override
 	public void enterMethod_call(DecafParser.Method_callContext ctx) {
-		Scope scope = scopes.peek(); 
-
-		String methodName = null; 
-		if(ctx.method_name() != null) {
-			methodName = ctx.method_name().getText();
-			System.err.println(methodName);
+		if(!(ctx.CALLOUT() != null)) { 
+			Scope scope = scopes.peek();
+			List<ScopeElement> parametersExpected = new ArrayList<ScopeElement>(); 
+			ScopeElement currentMethod = scope.get(ctx.method_name().ID().getText()); 
+			if(currentMethod == null) {
+				System.err.println("Error line: " + ctx.getStart().getLine() + ". Method used and not declared");  
+			} else {
+				parametersExpected = currentMethod.getParams(); 
+				if(!(parametersExpected.isEmpty())) {
+					DecafParser.Method_call_paramsContext paramsGiven = ctx.method_call_params();
+					if(!(parametersExpected.size() == paramsGiven.expr().size())) System.err.println("Error line: " + ctx.getStart().getLine() + ". Incorrect number of parameters in method call"); 
+					else for(int i = 0; i < paramsGiven.expr().size(); i++) { 
+						if(!(parametersExpected.get(i).getVarType().equals(type(paramsGiven.expr(i))))) {
+							System.err.println("Error line: " + ctx.getStart().getLine() + ". Parameter types do not match expected types"); 
+						}
+					}
+				}
+			}
 		}
 	}
-	 */
 
 	@Override
 	public void enterBlock(DecafParser.BlockContext ctx) {

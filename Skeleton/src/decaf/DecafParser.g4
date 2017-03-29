@@ -22,6 +22,7 @@ field_name: (ID|ID LSQRBRK INT_LITERAL RSQRBRK);
 // similar split on method params to improve readability and
 // ease of writing ScopeListener 
 method_decl: (type | VOID) ID LPAREN method_params? RPAREN  block;
+
 method_params: ((type ID)(COMMA type ID)*);
 
 block: LCURLY var_decl* statement*  RCURLY;
@@ -44,8 +45,10 @@ assign_op: ASSIGNOPERATOR
 		| ARITHPLUS ASSIGNOPERATOR
 		| ARITHMINUS ASSIGNOPERATOR;
 		
-method_call: method_name LPAREN (expr(COMMA expr)*)? RPAREN
+method_call: method_name LPAREN method_call_params? RPAREN
 		| CALLOUT LPAREN STRING_LITERAL (COMMA callout_arg(COMMA callout_arg)*)? RPAREN;
+		
+method_call_params: (expr(COMMA expr)*);
 		
 method_name: ID;
 location: ID
@@ -65,7 +68,6 @@ expr: location
 		| LPAREN expr RPAREN;
 
 callout_arg: (expr | STRING_LITERAL);
-
 
 // The following rules deal with grouping tokens
 // for ease of use in rules

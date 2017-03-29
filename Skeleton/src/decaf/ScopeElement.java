@@ -42,6 +42,4 @@ public class ScopeElement {
 	public void setParams(ScopeElement param) {
 			mParams.add(param);
 	}
-	
-	
 }
