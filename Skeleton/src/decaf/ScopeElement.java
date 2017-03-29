@@ -39,10 +39,8 @@ public class ScopeElement {
 		return mParams; 
 	}
 	
-	public void setParams(List<ScopeElement> params) {
-		for(int i = 0; i < params.size();  i++) {
-			//this.mParams = mParams.add(params.get(i));
-		}
+	public void setParams(ScopeElement param) {
+			mParams.add(param);
 	}
 	
 	

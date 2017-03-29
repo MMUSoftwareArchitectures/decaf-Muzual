@@ -340,13 +340,13 @@ public class ScopeListener extends DecafParserBaseListener {
 		if(ctx.method_params() != null) {
 			parameterCollection = ctx.method_params(); 
 			List<TerminalNode> params = parameterCollection.ID(); 
-
+			ScopeElement currentMethod = scope.get(ctx.ID().getText());
 			for(int i = 0; i < params.size(); i++) { 
 				ScopeElement var = new ScopeElement(parameterCollection.ID().get(i).getText(), parameterCollection.type().get(i).getText());
-				ScopeElement currentMethod = scope.get(ctx.ID().getText());
-				//currentMethod.setParams(var);
-				scope.put(currentMethod.getVarName(), currentMethod);
+				currentMethod.setParams(var);
+				System.err.println(currentMethod.getParams()); 
 			}
+			scope.put(currentMethod.getVarName(), currentMethod);
 		}
 		scopes.push(new Scope(scopes.peek()));
 	}
