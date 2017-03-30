@@ -189,7 +189,8 @@ public class ScopeListener extends DecafParserBaseListener {
 	 * Type checking for expressions
 	 * 
 	 * Takes an expression context and determines types of individual components
-	 * recursively.
+	 * recursively. Based on Psuedocode from textbook given 
+	 * Torben Ægidius Mogensen, Basics of Compiler Design. 2010, Pp 136-138. Last Accessed: 30/03/2017 
 	 * 
 	 * Utilises other type methods below 
 	 * 
