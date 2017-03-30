@@ -1,12 +1,17 @@
+/**
+ * Semantic Checking for a Compiler
+ * 
+ * Contains the semantic checks specified in the Decaf Language Reference 
+ * to ensure correct semantic structure of code given 
+ * (Norling, 2017. Decaf Language Reference. Available on Moodle. Last accessed: 30/03/2017)
+ * 
+ * @author Miles Schofield
+ */
 package decaf;
 
 import java.util.Hashtable;
-
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.*;
-
 import decaf.DecafParser.Method_declContext;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -170,6 +175,7 @@ public class ScopeListener extends DecafParserBaseListener {
 			}
 		}
 		// Handling FOR loops 
+		// Ensures parameters of FOR are ints (therefore countable) 
 		if(ctx.FOR() != null) {
 		DecafParser.ExprContext expr = ctx.expr(0); 
 		DecafParser.ExprContext expr1 = ctx.expr(1); 
@@ -349,6 +355,8 @@ public class ScopeListener extends DecafParserBaseListener {
 			parameterCollection = ctx.method_params(); 
 			List<TerminalNode> params = parameterCollection.ID(); 
 			ScopeElement currentMethod = scope.get(ctx.ID().getText());
+			// Store the parameters in a List<ScopeElement> within ScopeElement 
+			// so "Main" has .getParams return an empty list. 
 			for(int i = 0; i < params.size(); i++) { 
 				ScopeElement var = new ScopeElement(parameterCollection.ID().get(i).getText(), parameterCollection.type().get(i).getText());
 				currentMethod.setParams(var);
@@ -363,9 +371,17 @@ public class ScopeListener extends DecafParserBaseListener {
 		if(doesReturn == false && ctx.type() != null) System.err.println("Error line: " + ctx.getStop().getLine() +". Method name: \"" + ctx.ID().getText() +  "\" must have a return statement"); 
 	}
 
-	
+	/**
+	 * Entering the method_call rule
+	 * 
+	 * Ensuring the parameters and typing is correct for
+	 * calling a method 
+	 * 
+	 * @param ctx Context given by method_call parse rule 
+	 */
 	@Override
 	public void enterMethod_call(DecafParser.Method_callContext ctx) {
+		// Rules for a CALLOUT are not relevant for standard method calling 
 		if(!(ctx.CALLOUT() != null)) { 
 			Scope scope = scopes.peek();
 			List<ScopeElement> parametersExpected = new ArrayList<ScopeElement>(); 
@@ -375,6 +391,8 @@ public class ScopeListener extends DecafParserBaseListener {
 			} else {
 				parametersExpected = currentMethod.getParams(); 
 				if(!(parametersExpected.isEmpty())) {
+					// paramsExpected holds method_decl's params. methodName.getParams is this list
+					// paramsGiven is the Method_call_params given in the call return 
 					DecafParser.Method_call_paramsContext paramsGiven = ctx.method_call_params();
 					if(!(parametersExpected.size() == paramsGiven.expr().size())) System.err.println("Error line: " + ctx.getStart().getLine() + ". Incorrect number of parameters in method call"); 
 					else for(int i = 0; i < paramsGiven.expr().size(); i++) { 
@@ -387,11 +405,11 @@ public class ScopeListener extends DecafParserBaseListener {
 		}
 	}
 
+	// Blocks can have their own scopes. Push and pop them respectively! 
 	@Override
 	public void enterBlock(DecafParser.BlockContext ctx) {
 		scopes.push(new Scope(scopes.peek()));
 	}
-
 	@Override
 	public void exitBlock(DecafParser.BlockContext ctx) {
 		scopes.pop(); 
@@ -409,19 +427,6 @@ public class ScopeListener extends DecafParserBaseListener {
 	public void exitProgram(DecafParser.ProgramContext ctx) {
 		if(foundMain == false) System.err.println("Error line: " + (ctx.getStop().getLine() + ". No Main Method")); 
 	}
-
-	/*@Override
-	public void enterEveryRule(ParserRuleContext ctx) {
-		// TODO Auto-generated method stub
-		super.enterEveryRule(ctx);
-		System.err.println("entering new rule!");
-		/*Scope scope = scopes.peek();
-		Set<String> keys = scope.keySet(); 
-		for(String key: keys){
-			System.out.println(key); 
-		}
-	}
-	 */ 
 
 	/** 
 	 * Method to determine if variable exists 

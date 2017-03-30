@@ -57,6 +57,7 @@ location: ID
 // It is key to separate strong and weak operators
 // due to order of operations when parsing 
 // */% have higher priority than +- according to BIDMAS
+// Torben Ægidius Mogensen, Basics of Compiler Design. 2010, Pp 63-67. Last Accessed: 30/03/2017 
 expr: location
 		| method_call
 		| literal
