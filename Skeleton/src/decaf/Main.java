@@ -61,16 +61,16 @@ public class Main {
                                 type = " IDENTIFIER";
                                 break;
                             case DecafLexer.CHAR_LITERAL: 
-                            	type = " CHAR";
+                            	type = " CHAR_LITERAL";
                             	break;
                             case DecafLexer.INT_LITERAL:
-                            	type = " INTEGER";
+                            	type = " INT_LITERAL";
                             	break;
                             case DecafLexer.BOOL_LITERAL:
-                            	type = " BOOLEAN";
+                            	type = " BOOL_LITERAL";
                             	break;
                             case DecafLexer.STRING_LITERAL:
-                            	type = " STRING";
+                            	type = " STRING_LITERAL";
                             	break;
                             }
                             // Return each token found to the user on a new line 

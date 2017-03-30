@@ -66,15 +66,14 @@ SL_COMMENT : '//' (~'\n')* '\n' -> skip;
 // and make use of the ESC and NOTESC fragments described below
 // Character literals are composed of a char in single quotes
 CHAR_LITERAL : '\'' (ESC|NOTESC) '\'';
-STRING_LITERAL : '"' (ESC|NOTESC)* '"';
+STRING_LITERAL : '"' (ESC|NOTESC)+ '"';
 
-// This rule says an integer is either one or no negative signs 
-// followed by one or more integer of either decimal or hex type
-INT_LITERAL : '-'?(DECIMAL_LITERAL|HEX_LITERAL);
-
+// This rule says an  integer of either decimal or hex type
+// negatives are handled in the PARSER by UNARY MINUS expr rules 
+// a negative lexer token is not used 
+INT_LITERAL : (DECIMAL_LITERAL|HEX_LITERAL);
 
 // A rule that is marked as a fragment will NOT have a token created for it
-
 fragment
 HEX_LITERAL : '0x' HEX_DIGIT+; 
 

@@ -339,29 +339,31 @@ public class ScopeListener extends DecafParserBaseListener {
 		if((ctx.ID().getText()).equals("main")) foundMain = true;
 		doesReturn = false; 
 		Scope scope = scopes.peek();
-
-		// Checking method TYPE
-		if(ctx.type() != null) {
-			ScopeElement method = new ScopeElement(ctx.ID().getText(), ctx.type().getText()); 
-			scope.put(method.getVarName(), method); 
-		} else {
-			doesReturn = true; 
-			ScopeElement method = new ScopeElement(ctx.ID().getText(), ctx.VOID().getText()); 
-			scope.put(method.getVarName(), method); 
-		}
-		// enter method decl 
-		DecafParser.Method_paramsContext parameterCollection = null;
-		if(ctx.method_params() != null) {
-			parameterCollection = ctx.method_params(); 
-			List<TerminalNode> params = parameterCollection.ID(); 
-			ScopeElement currentMethod = scope.get(ctx.ID().getText());
-			// Store the parameters in a List<ScopeElement> within ScopeElement 
-			// so "Main" has .getParams return an empty list. 
-			for(int i = 0; i < params.size(); i++) { 
-				ScopeElement var = new ScopeElement(parameterCollection.ID().get(i).getText(), parameterCollection.type().get(i).getText());
-				currentMethod.setParams(var);
+		if(!(varInScope(ctx.ID().getText()))) { 
+			// Checking method TYPE
+			if(ctx.type() != null) {
+				ScopeElement method = new ScopeElement(ctx.ID().getText(), ctx.type().getText()); 
+				scope.put(method.getVarName(), method); 
+			} else {
+				doesReturn = true; 
+				ScopeElement method = new ScopeElement(ctx.ID().getText(), ctx.VOID().getText()); 
+				scope.put(method.getVarName(), method); 
 			}
-		}
+			// enter method decl 
+			DecafParser.Method_paramsContext parameterCollection = null;
+			if(ctx.method_params() != null) {
+				parameterCollection = ctx.method_params(); 
+				List<TerminalNode> params = parameterCollection.ID(); 
+				ScopeElement currentMethod = scope.get(ctx.ID().getText());
+				// Store the parameters in a List<ScopeElement> within ScopeElement 
+				// so "Main" has .getParams return an empty list. 
+				for(int i = 0; i < params.size(); i++) { 
+					ScopeElement var = new ScopeElement(parameterCollection.ID().get(i).getText(), parameterCollection.type().get(i).getText());
+					currentMethod.setParams(var);
+				}
+			}
+		} else System.err.println("Error line: " + ctx.getStart().getLine() + ". Method name already in use"); 
+		
 		scopes.push(new Scope(scopes.peek()));
 	}
 
