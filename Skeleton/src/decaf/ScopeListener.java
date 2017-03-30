@@ -58,7 +58,7 @@ public class ScopeListener extends DecafParserBaseListener {
 			 * Checks existence of variable already to determine if needs to store or error
 			 *  @see varInScope 
 			 */
-			if(varInScope(var.getVarName())) System.err.println("Already exists" + var.getVarName()+ var.getVarType());
+			if(varInScope(var.getVarName())) System.err.println("Error line: " + ctx.getStart().getLine() + ". Variable already exists" + var.getVarName() + "(" +  var.getVarType() + ")");
 			else scope.put(var.getVarName(), var);
 
 			int varArraySize; 
@@ -68,7 +68,7 @@ public class ScopeListener extends DecafParserBaseListener {
 				if(field.INT_LITERAL().getText().contains("0x")) varArraySize = Integer.decode((field.INT_LITERAL().getText())); 
 				else varArraySize = Integer.parseInt((field.INT_LITERAL().getText())); 
 
-				if(varArraySize <= 0) System.err.println("Error line " + ctx.getStart().getLine() + ": Invalid array size on array named: " + field.ID().getText()); 
+				if(varArraySize <= 0) System.err.println("Error line: " + ctx.getStart().getLine() + ". Invalid array size on array named: " + field.ID().getText()); 
 				else scope.get(var.getVarName()).setVarType("intArray");
 			}
 		}
@@ -91,7 +91,7 @@ public class ScopeListener extends DecafParserBaseListener {
 			ScopeElement var = new ScopeElement(variable.getText(), ctx.type().getText()); 
 
 			if(varInScope(var.getVarName())) {
-				System.err.println("Error line " + ctx.getStart().getLine() + ": Cannot create " + var.getVarName() + ", " + var.getVarType() + ". Variable exists elsewhere");
+				System.err.println("Error line: " + ctx.getStart().getLine() + ". Cannot create " + var.getVarName() + "(" + var.getVarType() + ")" + ". Variable already exists");
 			} else scope.put(var.getVarName(), var);
 		}
 	}
@@ -113,7 +113,7 @@ public class ScopeListener extends DecafParserBaseListener {
 		if(ctx.location() != null) {
 			TerminalNode variable = ctx.location().ID(); 
 			if (!(varInScope(variable.getText()))) {
-				System.err.println("Error line: " + ctx.getStart().getLine() + ". Variable not declared");
+				System.err.println("Error line: " + ctx.getStart().getLine() + ". Variable used and not declared");
 			} else {
 				// ELSE: Variable has been declared - determine type of LHS, and then type of RHS if exists 
 				String LHS_Type = type(ctx.location()); 
@@ -139,7 +139,7 @@ public class ScopeListener extends DecafParserBaseListener {
 				if(!(type(expr).equals("int"))) System.err.println("Error line: " + ctx.getStart().getLine() + ". Array index must be type int"); 
 				if(ctx.assign_op() != null) {
 					expr = ctx.expr(0);
-					if(type(expr).equals("intArray")) System.err.println("Error line: " + ctx.getStart().getLine() + ". Attempted array nest. Array position cannot hold an array");
+					if(type(expr).equals("intArray")) System.err.println("Error line: " + ctx.getStart().getLine() + ". Attempted array nest. Array position can only hold a basic type");
 				}
 			}
 		}
@@ -165,7 +165,7 @@ public class ScopeListener extends DecafParserBaseListener {
 			if(ctx.expr() != null) {
 				DecafParser.ExprContext expr = ctx.expr(0); 
 				if(!(type(expr)).equals("boolean")) {
-					System.err.println("Error line: " + ctx.getStart().getLine() + ". If statement must have an expression evaluating to true or false");
+					System.err.println("Error line: " + ctx.getStart().getLine() + ". If statement must have an expression evaluating to true or false (boolean)");
 				}
 			}
 		}
@@ -224,14 +224,14 @@ public class ScopeListener extends DecafParserBaseListener {
 			// If contains Strong ops (*/%) - Check both types are INT. 
 			if(expr.strong_arith_op() != null) {
 				if (!(l_expr_type.equals("int") && r_expr_type.equals("int"))) {
-					System.err.println(typeMismatch); 
+					System.err.println(typeMismatch + ". Must both be int"); 
 				}
 				return "int"; 
 			} 
 			// If contains Weak ops (+-) - Check both types are INT. 
 			if(expr.weak_arith_op() != null) {
 				if (!(l_expr_type.equals("int") && r_expr_type.equals("int"))) {
-					System.err.println(typeMismatch); 
+					System.err.println(typeMismatch + ". Must both be int"); 
 				}
 				return "int"; 
 			}
@@ -239,22 +239,21 @@ public class ScopeListener extends DecafParserBaseListener {
 				// If contains Rel Ops (>=<=) - Check both types are INT. 
 				if(expr.bin_op().rel_op() != null) {
 					if (!(l_expr_type.equals("int") && r_expr_type.equals("int"))) {
-						System.err.println("Error line: " + expr.getStart().getLine() + ". Type mismatch. relational operators must both be integers " + 
-								 l_expr.getText() + "(" + l_expr_type + ")" + " and " + r_expr.getText() + "(" + r_expr_type + ")"); 
+						System.err.println(typeMismatch + ". Must both be int"); 
 					}
 					return "boolean"; 
 				}
 				// If contains conditional Ops (and, or) - Check both types are BOOLEAN. 
 				if(expr.bin_op().cond_op() != null) {
 					if (!(l_expr_type.equals("boolean") && r_expr_type.equals("boolean"))) { 
-						System.err.println(typeMismatch); 
+						System.err.println(typeMismatch + ". Must both be boolean"); 
 					}
 					return "boolean"; 
 				}
 				// If contains equality (== !=) - Check both types are the SAME. Can be BOOL or INT... 
 				if(expr.bin_op().eq_op() != null) {
 					if (!(l_expr_type.equals(r_expr_type))) {
-						System.err.println(typeMismatch); 
+						System.err.println(typeMismatch + ". Must both be same type"); 
 					}
 					return "boolean"; 
 				}
@@ -380,7 +379,7 @@ public class ScopeListener extends DecafParserBaseListener {
 					if(!(parametersExpected.size() == paramsGiven.expr().size())) System.err.println("Error line: " + ctx.getStart().getLine() + ". Incorrect number of parameters in method call"); 
 					else for(int i = 0; i < paramsGiven.expr().size(); i++) { 
 						if(!(parametersExpected.get(i).getVarType().equals(type(paramsGiven.expr(i))))) {
-							System.err.println("Error line: " + ctx.getStart().getLine() + ". Parameter types do not match expected types"); 
+							System.err.println("Error line: " + ctx.getStart().getLine() + ". Parameter types given do not match expected types"); 
 						}
 					}
 				}
@@ -408,7 +407,7 @@ public class ScopeListener extends DecafParserBaseListener {
 	 */
 	@Override
 	public void exitProgram(DecafParser.ProgramContext ctx) {
-		if(foundMain == false) System.err.println("Error line: " + (ctx.getStop().getLine() + " No Main Method")); 
+		if(foundMain == false) System.err.println("Error line: " + (ctx.getStop().getLine() + ". No Main Method")); 
 	}
 
 	/*@Override
@@ -421,18 +420,6 @@ public class ScopeListener extends DecafParserBaseListener {
 		for(String key: keys){
 			System.out.println(key); 
 		}
-	}
-	 */ 
-
-	/* 
-	@Override
-	public void enterExpr(DecafParser.ExprContext ctx) {
-		Scope scope = scopes.peek(); 
-		// if the expression is simply a location, check that it has been declared
-		if (ctx.location() != null) {
-			if(!(varInScope(ctx.location().ID().getText()))) System.err.println("Error line " + ctx.getStart().getLine() + ": Variable not declared: " + ctx.literal().getText());
-		}
-
 	}
 	 */ 
 
