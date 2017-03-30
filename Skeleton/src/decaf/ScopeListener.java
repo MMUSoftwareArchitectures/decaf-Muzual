@@ -61,6 +61,8 @@ public class ScopeListener extends DecafParserBaseListener {
 			ScopeElement var = new ScopeElement(field.ID().getText(), ctx.type().getText()); 
 			/**
 			 * Checks existence of variable already to determine if needs to store or error
+			 * Example of handling semantic Rule #1 
+			 * 
 			 *  @see varInScope 
 			 */
 			if(varInScope(var.getVarName())) System.err.println("Error line: " + ctx.getStart().getLine() + ". Variable already exists" + var.getVarName() + "(" +  var.getVarType() + ")");
@@ -73,12 +75,12 @@ public class ScopeListener extends DecafParserBaseListener {
 				if(field.INT_LITERAL().getText().contains("0x")) varArraySize = Integer.decode((field.INT_LITERAL().getText())); 
 				else varArraySize = Integer.parseInt((field.INT_LITERAL().getText())); 
 
+				// example of semantic rule #4. 
 				if(varArraySize <= 0) System.err.println("Error line: " + ctx.getStart().getLine() + ". Invalid array size on array named: " + field.ID().getText()); 
 				else scope.get(var.getVarName()).setVarType("intArray");
 			}
 		}
 	}
-
 	/**
 	 * Entering the Var_decl rule
 	 * 
@@ -89,7 +91,7 @@ public class ScopeListener extends DecafParserBaseListener {
 	@Override
 	public void enterVar_decl(DecafParser.Var_declContext ctx) {
 		Scope scope = scopes.peek();
-		
+
 		// Iterate the list of IDs that occur in var_decl 
 		List<TerminalNode> variables = ctx.ID();
 		for(TerminalNode variable : variables) {
@@ -118,11 +120,12 @@ public class ScopeListener extends DecafParserBaseListener {
 		if(ctx.location() != null) {
 			TerminalNode variable = ctx.location().ID(); 
 			if (!(varInScope(variable.getText()))) {
+				// example semantic rule #2
 				System.err.println("Error line: " + ctx.getStart().getLine() + ". Variable used and not declared");
 			} else {
 				// ELSE: Variable has been declared - determine type of LHS, and then type of RHS if exists 
 				String LHS_Type = type(ctx.location()); 
-				
+
 				if(ctx.expr() != null) { 
 					DecafParser.ExprContext expr = ctx.expr(0); 
 					String RHS_Type = type(expr);
@@ -149,6 +152,7 @@ public class ScopeListener extends DecafParserBaseListener {
 			}
 		}
 		// Checking return types of methods 
+		// example of semantic rule 7 and 8. 
 		if(ctx.RETURN() != null) {
 			doesReturn = true; 
 			if(ctx.getParent().getParent() != null) {
@@ -177,8 +181,8 @@ public class ScopeListener extends DecafParserBaseListener {
 		// Handling FOR loops 
 		// Ensures parameters of FOR are ints (therefore countable) 
 		if(ctx.FOR() != null) {
-		DecafParser.ExprContext expr = ctx.expr(0); 
-		DecafParser.ExprContext expr1 = ctx.expr(1); 
+			DecafParser.ExprContext expr = ctx.expr(0); 
+			DecafParser.ExprContext expr1 = ctx.expr(1); 
 			if(!(type(expr)).equals("int") && (type(expr1)).equals("int")) {
 				System.err.println("Error line: " + ctx.getStart().getLine() + ". For loop parameters must be type int");
 			}
@@ -191,7 +195,6 @@ public class ScopeListener extends DecafParserBaseListener {
 	 * Takes an expression context and determines types of individual components
 	 * recursively. Based on Psuedocode from textbook given 
 	 * Torben Ægidius Mogensen, Basics of Compiler Design. 2010, Pp 136-138. Last Accessed: 30/03/2017 
-	 * 
 	 * Utilises other type methods below 
 	 * 
 	 * @param expr Context for all information given in the expression parse rule
@@ -226,9 +229,10 @@ public class ScopeListener extends DecafParserBaseListener {
 			String l_expr_type = type(l_expr);
 			String r_expr_type = type(r_expr); 
 			String typeMismatch = ("Error line " + expr.getStart().getLine() + ". Type mismatch, cannot perform operation on variables " + 
-					 l_expr.getText() + "(" + l_expr_type + ")" + " and " + r_expr.getText() + "(" + r_expr_type + ")"); 
+					l_expr.getText() + "(" + l_expr_type + ")" + " and " + r_expr.getText() + "(" + r_expr_type + ")"); 
 
 			// If contains Strong ops (*/%) - Check both types are INT. 
+			// example of semantic rule 12. 
 			if(expr.strong_arith_op() != null) {
 				if (!(l_expr_type.equals("int") && r_expr_type.equals("int"))) {
 					System.err.println(typeMismatch + ". Must both be int"); 
@@ -251,6 +255,7 @@ public class ScopeListener extends DecafParserBaseListener {
 					return "boolean"; 
 				}
 				// If contains conditional Ops (and, or) - Check both types are BOOLEAN. 
+				// examples of semantic rule #14 
 				if(expr.bin_op().cond_op() != null) {
 					if (!(l_expr_type.equals("boolean") && r_expr_type.equals("boolean"))) { 
 						System.err.println(typeMismatch + ". Must both be boolean"); 
@@ -258,6 +263,7 @@ public class ScopeListener extends DecafParserBaseListener {
 					return "boolean"; 
 				}
 				// If contains equality (== !=) - Check both types are the SAME. Can be BOOL or INT... 
+				// example of semantic rule #13. 
 				if(expr.bin_op().eq_op() != null) {
 					if (!(l_expr_type.equals(r_expr_type))) {
 						System.err.println(typeMismatch + ". Must both be same type"); 
@@ -317,6 +323,7 @@ public class ScopeListener extends DecafParserBaseListener {
 	 * @return details.getVarType() String type of method_call 
 	 */
 	public String type(DecafParser.Method_callContext mContext) {
+		// example of semantic rule #6
 		if(mContext.CALLOUT() != null) return("int"); 
 		Scope scope = scopes.peek();
 		// When a method is called: .parent is the method_decl, 
@@ -364,7 +371,7 @@ public class ScopeListener extends DecafParserBaseListener {
 				}
 			}
 		} else System.err.println("Error line: " + ctx.getStart().getLine() + ". Method name already in use"); 
-		
+
 		scopes.push(new Scope(scopes.peek()));
 	}
 
@@ -393,6 +400,7 @@ public class ScopeListener extends DecafParserBaseListener {
 				System.err.println("Error line: " + ctx.getStart().getLine() + ". Method used and not declared");  
 			} else {
 				parametersExpected = currentMethod.getParams(); 
+				// example of semantic rule #5 
 				if(!(parametersExpected.isEmpty())) {
 					// paramsExpected holds method_decl's params. methodName.getParams is this list
 					// paramsGiven is the Method_call_params given in the call return 
@@ -428,6 +436,7 @@ public class ScopeListener extends DecafParserBaseListener {
 	 */
 	@Override
 	public void exitProgram(DecafParser.ProgramContext ctx) {
+		// example of semantic rule #3 
 		if(foundMain == false) System.err.println("Error line: " + (ctx.getStop().getLine() + ". No Main Method")); 
 	}
 
@@ -473,7 +482,7 @@ class Scope extends Hashtable<String, ScopeElement> {
 				return parent.get(key);
 			}
 		}
-		
+
 	}
 	@Override
 	public synchronized ScopeElement put(String key, ScopeElement value) {
