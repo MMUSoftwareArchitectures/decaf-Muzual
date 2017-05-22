@@ -1,13 +1,5 @@
 /**
- *  This is the main class for your compiler. It uses the command line interface (CLI) tools found in java6G6Z1010.tools.CLI.
- *  It is <em>very</em> incomplete. For the first stage, you will need to update the section handling the CLI.SCAN option.
- *  Study this section of code to work out what it is doing, and read the specifications carefully to understand what it
- *  <em>should</em> be doing, then modify it accordingly.
- *  For the second stage, some code is provided that may help you with your debugging, but you must change it to give appropriate
- *  correct behaviour for submission.
- *  For the final stage, you need to think carefully about what you will need to do here.
- *  
- *  DO NOT FORGET TO CHANGE THESE COMMENTS AS WELL AS THE CODE
+ *  This is the main class for the compiler. It uses the command line interface (CLI) tools found in java6G6Z1010.tools.CLI.
  */
 package decaf;
 
@@ -90,12 +82,12 @@ public class Main {
                 CommonTokenStream tokens = new CommonTokenStream(lexer);
                 DecafParser parser = new DecafParser (tokens);
                 ParseTree tree = parser.program();
-                if (CLI.debug) {
+              //  if (CLI.debug) {
                     TreePrinterListener listener = new TreePrinterListener(parser);
 	                ParseTreeWalker.DEFAULT.walk(listener, tree);
 	                String formatted = listener.toString();
 	                System.out.println(formatted);
-                }
+              //  }
             }
             // Allows for semantic checking 
              else if (CLI.target == CLI.INTER)
